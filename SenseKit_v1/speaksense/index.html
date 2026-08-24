@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>SpeakSense — AI Speech Therapy &amp; Assistive Voice</title>
+<style>
+  :root{
+    --ink:#0b1220;--slate:#41505f;--mute:#7a8798;--line:#e6eaf0;--bg:#f6f5fb;--card:#fff;--card2:#faf9fd;
+    --brand:#7c3aed;--brand2:#a855f7;--blue:#2563eb;--teal:#0e9488;--pink:#db2777;--gold:#b7791f;--red:#dc2626;
+    --ok:#0e9488;--warn:#b7791f;--bad:#dc2626;
+    --sh-sm:0 1px 2px rgba(11,18,32,.06);--sh:0 2px 6px rgba(11,18,32,.06),0 12px 28px rgba(11,18,32,.07);--sh-lg:0 20px 50px rgba(11,18,32,.12);
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--slate);-webkit-font-smoothing:antialiased;line-height:1.55}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  h1,h2,h3,h4{color:var(--ink)}
+  header.top{position:sticky;top:0;z-index:50;background:rgba(246,245,251,.82);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--ink);font-size:19px;letter-spacing:-.4px}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;box-shadow:var(--sh-sm)}
+  .logo svg{width:20px;height:20px}
+  .tag{font-size:10.5px;font-weight:800;color:var(--brand);background:#f3e8ff;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
+  .top nav{margin-left:auto;display:flex;gap:4px}
+  .top nav button{border:0;background:transparent;color:var(--slate);font-weight:650;font-size:14px;padding:9px 13px;border-radius:10px;cursor:pointer;transition:.15s}
+  .top nav button:hover{background:#ece9f5;color:var(--ink)}
+  .top nav button.active{background:var(--ink);color:#fff}
+  .doc-btn{border:0;background:linear-gradient(135deg,var(--teal),#14b8a6);color:#fff;font-weight:700;font-size:13px;padding:10px 15px;border-radius:11px;cursor:pointer;box-shadow:var(--sh-sm);white-space:nowrap}
+  .doc-btn:hover{filter:brightness(1.06)}
+  .menu-toggle{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;color:var(--ink)}
+  @media(max-width:900px){
+    .top nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;background:#fff;padding:8px;border-bottom:1px solid var(--line);box-shadow:var(--sh);display:none}
+    .top nav.open{display:flex}.menu-toggle{display:block}.top nav button{text-align:left}.doc-btn{padding:8px 11px;font-size:12px}
+  }
+  .hero{padding:36px 0 6px}
+  .hero .kick{display:inline-flex;align-items:center;gap:7px;background:#f3e8ff;color:var(--brand);font-weight:750;font-size:12px;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  .hero .kick .dot{width:7px;height:7px;border-radius:50%;background:var(--brand2);box-shadow:0 0 0 3px rgba(168,85,247,.2)}
+  .hero h1{font-size:36px;line-height:1.07;margin:0 0 10px;letter-spacing:-1px;font-weight:850}
+  .hero h1 .grad{background:linear-gradient(120deg,var(--brand),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:16px;max-width:640px;margin:0}
+  @media(max-width:600px){.hero h1{font-size:28px}}
+  /* mode switch (therapy / voice) */
+  .bigseg{display:inline-flex;background:#ece9f5;border-radius:14px;padding:5px;gap:3px;margin:16px 0 2px}
+  .bigseg button{border:0;background:transparent;font-weight:750;font-size:14px;color:var(--slate);padding:10px 18px;border-radius:10px;cursor:pointer;transition:.15s;display:flex;align-items:center;gap:7px}
+  .bigseg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+  .modebar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:12px 0 2px}
+  .seg{display:inline-flex;background:#ece9f5;border-radius:12px;padding:4px;gap:2px}
+  .seg button{border:0;background:transparent;font-weight:700;font-size:13px;color:var(--slate);padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+  .muted{color:var(--mute);font-size:13px}
+  .statuspill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--mute)}
+  .statuspill b{color:var(--ink)}
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1.12fr .88fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:960px){.g2{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+  .card.tight{padding:16px}
+  .card h3{margin:0 0 3px;font-size:16.5px;font-weight:780;letter-spacing:-.2px}
+  .card .sub{font-size:12.5px;color:var(--mute);margin:0 0 14px}
+  .cardhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .cardhead .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+  .cardhead h3{margin:0}
+  /* target word */
+  .targetbox{text-align:center;padding:10px 0 4px}
+  .targetlabel{font-size:11px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .targetword{font-size:44px;font-weight:850;color:var(--ink);letter-spacing:-1px;margin:4px 0 2px}
+  .targetipa{font-size:14px;color:var(--brand);font-weight:650}
+  .wordchips{display:flex;gap:7px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+  .wchip{font-size:12.5px;font-weight:650;padding:7px 13px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;transition:.15s}
+  .wchip:hover{border-color:var(--brand);color:var(--brand);background:#faf5ff}
+  .wchip.on{background:var(--brand);color:#fff;border-color:var(--brand)}
+  /* mic stage */
+  .stage{position:relative;background:radial-gradient(120% 120% at 50% 0%,#241436,#0b0716);border-radius:16px;overflow:hidden;height:180px;display:grid;place-items:center}
+  .stage canvas{position:absolute;inset:0;width:100%;height:100%}
+  .stage .hint{position:relative;color:#b9a6d6;font-size:13px;text-align:center;padding:20px;z-index:2}
+  .badgeTop{position:absolute;top:11px;left:11px;display:flex;gap:7px;z-index:5}
+  .rec{background:rgba(219,39,119,.92);color:#fff;font-weight:800;font-size:11px;padding:5px 10px;border-radius:999px;display:none;align-items:center;gap:6px}
+  .rec.on{display:inline-flex}
+  .engine{background:rgba(0,0,0,.4);color:#e9d5ff;font-weight:700;font-size:10.5px;padding:5px 9px;border-radius:999px}
+  .dotp{width:7px;height:7px;background:#fff;border-radius:50%;animation:blink 1s infinite}
+  @keyframes blink{50%{opacity:.25}}
+  .miclevel{position:absolute;bottom:11px;left:11px;right:11px;height:6px;background:rgba(255,255,255,.12);border-radius:999px;overflow:hidden;z-index:5}
+  .miclevel>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#a855f7,#e879f9);border-radius:999px}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+  .btn{border:0;border-radius:12px;padding:12px 18px;font-weight:750;font-size:14px;cursor:pointer;box-shadow:var(--sh-sm);transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+  .btn.teal{background:var(--teal);color:#fff}
+  .btn.dark{background:var(--ink);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+  .btn.ghost:hover{border-color:#cbb8e6;background:var(--card2)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .metrics{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+  @media(max-width:560px){.metrics{grid-template-columns:repeat(2,1fr)}}
+  .metric{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .metric .k{font-size:10.5px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .metric .v{font-size:26px;font-weight:850;color:var(--ink);margin-top:3px;line-height:1}
+  .metric .u{font-size:12px;color:var(--mute);font-weight:650}
+  .metric .bar{height:6px;border-radius:999px;background:#ece9f5;margin-top:10px;overflow:hidden}
+  .metric .bar>i{display:block;height:100%;border-radius:999px;transition:width .6s cubic-bezier(.2,.8,.2,1)}
+  .badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;margin-top:7px}
+  .b-ok{background:#e7f6f4;color:var(--ok)}.b-warn{background:#fbf1df;color:var(--warn)}.b-bad{background:#fdeaea;color:var(--bad)}
+  .scorehero{display:flex;align-items:center;gap:16px;margin-top:16px;padding:15px;border-radius:14px;background:linear-gradient(120deg,#1a1030,#2a1a42);color:#fff}
+  .ring{--p:0;width:74px;height:74px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--brand2) calc(var(--p)*1%),rgba(255,255,255,.12) 0);position:relative}
+  .ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:#160d28}
+  .ring b{position:relative;font-size:20px;font-weight:850}
+  .scorehero .lab{font-size:12.5px;color:#b9a6d6}.scorehero .big{font-size:17px;font-weight:800;margin-top:2px}
+  .report{border-left:4px solid var(--brand);background:linear-gradient(180deg,#f7f2fe,#fdfcff);border-radius:13px;padding:15px 17px}
+  .report h4{margin:0 0 5px;font-size:15px}.report ul{margin:9px 0 0;padding-left:19px}.report li{margin-bottom:6px;font-size:13.8px}
+  .agentline{display:flex;gap:11px;align-items:center;margin-bottom:9px}
+  .agentav{flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#c084fc);display:grid;place-items:center;color:#fff;font-weight:850;font-size:13px;box-shadow:var(--sh-sm)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line)}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--mute);font-weight:800}
+  tbody tr:hover td{background:var(--card2)}
+  .chartbox{width:100%;height:240px}
+  .section{padding:30px 0}
+  .section h2{font-size:25px;margin:0 0 4px;letter-spacing:-.5px}
+  .section .lead{color:var(--mute);margin:0 0 20px;font-size:14.5px;max-width:640px}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}.kv b{color:var(--ink)}
+  .hidden{display:none!important}
+  /* assistive voice board */
+  .aacout{min-height:64px;border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;font-size:22px;font-weight:700;color:var(--ink);background:#fff;display:flex;align-items:center;flex-wrap:wrap;gap:6px}
+  .aacout .ph{color:var(--mute);font-weight:500;font-size:16px}
+  .predrow{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+  .pred{font-size:14px;font-weight:700;padding:9px 14px;border-radius:11px;border:1.5px solid var(--brand);color:var(--brand);background:#faf5ff;cursor:pointer}
+  .pred:hover{background:var(--brand);color:#fff}
+  .board{display:grid;grid-template-columns:repeat(4,1fr);gap:9px}
+  @media(max-width:560px){.board{grid-template-columns:repeat(3,1fr)}}
+  .tile{border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:14px 8px;text-align:center;cursor:pointer;transition:.15s;font-weight:700;font-size:13.5px;color:var(--ink)}
+  .tile:hover{border-color:var(--teal);background:#f0fbf9;transform:translateY(-2px)}
+  .tile .e{font-size:24px;display:block;margin-bottom:4px}
+  .chatlog{height:300px;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px}
+  .msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.6px;line-height:1.5}
+  .msg.bot{background:#ece9f5;color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.me{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .chip{font-size:12.5px;font-weight:650;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--brand);color:var(--brand);background:#faf5ff}
+  .disc{font-size:11.5px;color:var(--mute);margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+  footer{padding:28px 0 46px;color:var(--mute);font-size:12.5px;text-align:center}
+  footer b{color:var(--slate)}
+  .modal{position:fixed;inset:0;background:rgba(11,18,32,.55);display:none;place-items:center;z-index:90;padding:18px;backdrop-filter:blur(3px)}
+  .modal.on{display:grid;animation:fade .2s}@keyframes fade{from{opacity:0}}
+  .modal .box{background:#fff;border-radius:20px;max-width:470px;width:100%;padding:24px;box-shadow:var(--sh-lg)}
+  .cons{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:13px;margin-top:11px}
+  .cons .av{width:42px;height:42px;border-radius:11px;background:#e7f6f4;color:var(--teal);display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+  .cons .nm{font-weight:750;color:var(--ink);font-size:14px}
+  .fadein{animation:up .4s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{opacity:0;transform:translateY(8px)}}
+  .print-only{display:none}
+  #printHeader{padding:0 20px}
+  .ph-top{display:flex;justify-content:space-between;align-items:flex-start;padding-top:6px}
+  .ph-brand{display:flex;gap:11px;align-items:center}
+  .ph-logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;font-weight:900;font-size:18px}
+  .ph-brand b{font-size:17px;color:var(--ink)}.ph-brand span{font-size:11px;color:var(--mute)}
+  .ph-meta{font-size:11px;color:var(--mute);text-align:right;line-height:1.6}
+  .ph-rule{height:3px;background:linear-gradient(90deg,var(--brand),var(--pink));border-radius:2px;margin-top:10px}
+  @media print{
+    @page{margin:14mm}
+    header.top,.modebar,.bigseg,.btnrow,.doc-btn,.chips,#chatInputRow,.noprint,.stage,.wordchips,.menu-toggle,.predrow,.board{display:none!important}
+    .print-only{display:block!important}
+    .card{box-shadow:none;border:1px solid #d8dee6;break-inside:avoid;page-break-inside:avoid}
+    body{background:#fff}.section,.hero{padding:8px 0}
+    .hero .kick,.hero p{display:none}.hero h1{font-size:22px}
+    .report,.scorehero,.badge,.metric .bar>i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="landing.html" style="color:var(--ink)">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M4 9v6h4l5 4V5L8 9H4zM17 8a5 5 0 010 8M19.5 5.5a9 9 0 010 13" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      SpeakSense
+    </a>
+    <span class="tag">iQOO HEALTHTECH</span>
+    <button class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+    <nav id="nav">
+      <button data-tab="coach" class="active">Therapy Coach</button>
+      <button data-tab="voice">Assistive Voice</button>
+      <button data-tab="history">History &amp; Trends</button>
+      <button data-tab="report">Monthly Report</button>
+      <button data-tab="assistant">AI Assistant</button>
+      <button data-tab="devices">Devices</button>
+      <button class="doc-btn" onclick="openDoctor()">📞 Contact an SLP</button>
+    </nav>
+  </div>
+</header>
+
+<div id="printHeader" class="print-only">
+  <div class="ph-top">
+    <div class="ph-brand"><span class="ph-logo">S</span><div><b>SpeakSense</b><br><span>Speech-Therapy Progress Report</span></div></div>
+    <div class="ph-meta" id="phMeta"></div>
+  </div>
+  <div class="ph-rule"></div>
+</div>
+
+<!-- ============ THERAPY COACH ============ -->
+<main id="tab-coach">
+  <section class="wrap hero">
+    <span class="kick"><span class="dot"></span> On-device speech AI · your voice never leaves your phone</span>
+    <h1>Speak. Get scored.<br><span class="grad">Improve, one sound at a time.</span></h1>
+    <p>SpeakSense listens to each attempt and measures pitch, loudness, timing and clarity in real time — then an
+       on-device AI coach turns it into a kind, specific plan that adapts to your voice.</p>
+    <div class="modebar">
+      <div class="seg">
+        <button id="segReal" class="on" onclick="setMode('real')">🎤 Live mic</button>
+        <button id="segSim" onclick="setMode('sim')">▶️ Demo mode</button>
+      </div>
+      <span class="statuspill" id="enginePill">engine: <b id="engineName">checking…</b></span>
+      <span class="muted" id="modeMsg"></span>
+    </div>
+  </section>
+
+  <section class="wrap grid g2" style="padding-bottom:6px">
+    <div class="card">
+      <div class="cardhead"><div class="ic" style="background:#f3e8ff">🎯</div><div><h3>Practice</h3><div class="sub" style="margin:0">Pick a target, tap Record, and say it clearly.</div></div></div>
+      <div class="targetbox">
+        <div class="targetlabel" id="tgtCat">Word · /r/ sound</div>
+        <div class="targetword" id="tgtWord">water</div>
+        <div class="targetipa" id="tgtIpa">/ˈwɔː.tər/</div>
+      </div>
+      <div class="wordchips" id="wordChips"></div>
+      <div class="stage" id="stage">
+        <div class="badgeTop"><span class="rec" id="rec"><span class="dotp"></span> REC</span><span class="engine" id="stageEngine">idle</span></div>
+        <canvas id="viz"></canvas>
+        <div class="miclevel"><i id="micBar"></i></div>
+        <div class="hint" id="stageHint">Live waveform &amp; spectrogram render here.<br><span style="opacity:.75">In this preview the mic is blocked — use <b>Demo mode</b>.</span></div>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" id="recBtn" onclick="toggleRecord()">● Record attempt</button>
+        <button class="btn ghost" id="hearBtn" onclick="speakTarget()">🔊 Hear the word</button>
+        <button class="btn dark" id="baseBtn" onclick="setBaseline()" disabled>★ Save baseline</button>
+      </div>
+      <div id="liveStat" class="muted" style="margin-top:11px;min-height:18px"></div>
+    </div>
+
+    <div class="card">
+      <div class="cardhead"><div class="ic" style="background:#eef2ff">📊</div><div><h3>Results</h3><div class="sub" id="resSub" style="margin:0">Record an attempt to see your scores vs baseline.</div></div></div>
+      <div class="metrics" id="metricTiles"></div>
+      <div id="scoreWrap"></div>
+      <div id="radarWrap" class="hidden" style="margin-top:16px">
+        <div class="sub" style="margin-bottom:4px">Speech profile <span class="muted">(purple = you, gold dashed = baseline)</span></div>
+        <canvas id="radarChart" style="width:100%;height:220px"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" style="padding:6px 20px 12px">
+    <div class="card">
+      <div class="agentline"><div class="agentav">AI</div><div><h3 style="margin:0;font-size:16.5px">Speech Therapy Coach</h3><div class="sub" style="margin:0">Rule-based on-device agent — reads your acoustics, writes your plan.</div></div></div>
+      <div id="coachOut" class="report"><em>Your personalised feedback appears here after an attempt.</em></div>
+      <div class="btnrow noprint">
+        <button class="btn teal" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn ghost" onclick="switchTab('history')">📈 View trends</button>
+        <button class="btn ghost" onclick="switchTab('assistant')">💬 Ask the assistant</button>
+        <button class="btn ghost" onclick="openDoctor()">🩺 Contact an SLP</button>
+      </div>
+      <p class="disc">⚠️ SpeakSense is a practice &amp; communication aid, <b>not a medical diagnosis</b>. It supports — it doesn’t replace — a speech-language pathologist.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ============ ASSISTIVE VOICE ============ -->
+<main id="tab-voice" class="hidden">
+  <section class="wrap section">
+    <h2>Assistive Voice</h2>
+    <p class="lead">For people who can’t use their voice: tap words to build a sentence, use smart predictions, and let the phone speak it aloud.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="aacout" id="aacOut"><span class="ph">Tap tiles or predictions to build a sentence…</span></div>
+        <div class="predrow" id="predRow"></div>
+        <div class="btnrow">
+          <button class="btn primary" onclick="speakAAC()">🔊 Speak</button>
+          <button class="btn ghost" onclick="aacBackspace()">⌫ Delete</button>
+          <button class="btn ghost" onclick="aacClear()">Clear</button>
+          <button class="btn ghost" onclick="savePhrase()">★ Save phrase</button>
+        </div>
+        <div style="margin-top:16px">
+          <div class="sub" style="margin-bottom:6px">Saved quick phrases</div>
+          <div class="chips" id="savedPhrases"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#e7f6f4">⌨️</div><h3>Word board</h3></div>
+        <p class="sub" style="margin-top:-6px">Common words &amp; needs. Categories switch the board.</p>
+        <div class="chips" id="catChips" style="margin-bottom:12px"></div>
+        <div class="board" id="board"></div>
+      </div>
+    </div>
+    <p class="disc" style="max-width:640px">Uses your device’s built-in text-to-speech. In this preview TTS may be silent if no voices are installed; on a phone it speaks aloud. Prediction is on-device (no internet).</p>
+  </section>
+</main>
+
+<!-- ============ HISTORY ============ -->
+<main id="tab-history" class="hidden">
+  <section class="wrap section">
+    <h2>History &amp; trends</h2>
+    <p class="lead">Every attempt is stored on your device. Track clarity and per-sound progress over time.</p>
+    <div class="grid g3" id="statCards"></div>
+    <div class="card" style="margin-top:18px">
+      <h3>Trend over time</h3><p class="sub">Pick a metric. Your baseline is the dashed gold line.</p>
+      <div class="chips" style="margin-bottom:12px">
+        <span class="chip on" data-metric="clarity" onclick="plotMetric('clarity',this)">Clarity</span>
+        <span class="chip" data-metric="pitchStab" onclick="plotMetric('pitchStab',this)">Pitch stability</span>
+        <span class="chip" data-metric="loudness" onclick="plotMetric('loudness',this)">Loudness</span>
+        <span class="chip" data-metric="duration" onclick="plotMetric('duration',this)">Duration</span>
+      </div>
+      <canvas id="trendChart" class="chartbox"></canvas>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>Attempt log</h3>
+      <div style="overflow:auto"><table id="histTable"></table></div>
+      <div class="btnrow noprint">
+        <button class="btn ghost" onclick="seedDemoHistory()">✨ Load sample month</button>
+        <button class="btn ghost" onclick="clearHistory()">🗑️ Clear history</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MONTHLY ============ -->
+<main id="tab-report" class="hidden">
+  <section class="wrap section">
+    <h2>Monthly report</h2>
+    <p class="lead">Auto-generated summary — ready to print or share with a speech-language pathologist.</p>
+    <div class="card"><div id="monthlyOut"><em>No data yet — record attempts or load the sample month in History.</em></div>
+      <div class="btnrow noprint">
+        <button class="btn teal" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <button class="btn ghost" onclick="switchTab('history')">Back to history</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ ASSISTANT ============ -->
+<main id="tab-assistant" class="hidden">
+  <section class="wrap section">
+    <h2>AI Health Assistant</h2>
+    <p class="lead">A rule-based assistant that explains your results and suggests speech exercises — no internet or API key required.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="chatlog" id="chatlog"></div>
+        <div class="chips" id="chatChips"></div>
+        <div class="modebar" id="chatInputRow" style="margin-top:11px">
+          <input id="chatInput" placeholder="Ask about your results…" style="flex:1;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font-size:14px;outline:none"/>
+          <button class="btn primary" onclick="sendChat()">Send</button>
+        </div>
+        <p class="disc">Educational guidance only — not a diagnosis. Use “Contact an SLP” for real concerns.</p>
+      </div>
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#f3e8ff">🧩</div><h3>Speech exercise plan</h3></div>
+        <p class="sub" style="margin-top:-6px">Drills matched to your latest results. Progress is trackable in History.</p>
+        <div id="exerciseOut"><em>Record an attempt to get a tailored plan.</em></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ DEVICES ============ -->
+<main id="tab-devices" class="hidden">
+  <section class="wrap section">
+    <h2>Devices &amp; sync</h2>
+    <p class="lead">View reports anywhere; choose your assistive voice.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#e7f6f4">🗣️</div><h3>Voice output</h3></div>
+        <p class="sub" style="margin-top:-6px">Pick the text-to-speech voice for Assistive mode &amp; “Hear the word”.</p>
+        <div class="kv"><span>Available voices</span><b id="voiceCount">—</b></div>
+        <select id="voiceSel" style="width:100%;padding:11px;border:1.5px solid var(--line);border-radius:11px;margin-top:8px;font-size:14px"></select>
+        <div class="btnrow"><button class="btn primary" onclick="testVoice()">🔊 Test voice</button></div>
+        <p class="note" style="margin-top:12px;font-size:12px;color:#7a5c17;background:#fdf6e3;border:1px solid #f0e2b6;padding:10px 13px;border-radius:11px">Speaker-adaptive on-device therapy models ship in <b>Phase 2 (native app)</b>.</p>
+      </div>
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#eef2ff">💻</div><h3>Laptop &amp; web</h3></div>
+        <p class="sub" style="margin-top:-6px">Responsive web app — the same report opens on any device.</p>
+        <div class="kv"><span>Screen</span><b id="scr">—</b></div>
+        <div class="kv"><span>Speech engine</span><b id="engRow">—</b></div>
+        <div class="kv"><span>Microphone</span><b id="hasMic">—</b></div>
+        <div class="kv"><span>Speech recognition</span><b id="hasSR">—</b></div>
+        <div class="kv"><span>Stored attempts</span><b id="storedN">0</b></div>
+        <div class="btnrow">
+          <button class="btn ghost" onclick="exportAll()">⬇️ Export data (JSON)</button>
+          <button class="btn ghost" onclick="switchTab('report')">🖨️ Monthly report</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <b>SpeakSense</b> · on-device speech-therapy coach &amp; assistive voice · Hackathon Round-1 web prototype.<br>
+  Phase 2 = native app with speaker-adaptive on-device models. Not a medical device.
+</footer>
+
+<div class="modal" id="docModal">
+  <div class="box">
+    <h3>Contact a Speech-Language Pathologist</h3>
+    <p class="sub">Based on your latest results, SpeakSense suggests these next steps.</p>
+    <div id="docReason" class="report" style="margin-bottom:6px"></div>
+    <div class="cons"><div class="av">🗣️</div><div><div class="nm">Ms. R. Iyer</div><span class="muted">Speech-Language Pathologist · pediatric &amp; adult · video consult · today</span></div></div>
+    <div class="cons"><div class="av">🧠</div><div><div class="nm">Dr. K. Nair</div><span class="muted">Neuro-rehab (post-stroke speech) · video consult · tomorrow</span></div></div>
+    <div class="btnrow" style="margin-top:16px">
+      <button class="btn primary" onclick="alert('Demo: this would open a booking / tele-consult flow with your progress attached.')">Book a consult</button>
+      <button class="btn ghost" onclick="closeDoctor()">Close</button>
+    </div>
+    <p class="disc">Demo action for the pitch video. In production this connects to a tele-therapy partner and shares your progress with consent.</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   SpeakSense v1 — industry-structured single-file app
+   Modules: state · audio(mic pitch/loudness/duration/spectrogram) ·
+            speech recognition · TTS · metrics · baseline/drift ·
+            coach · assistive voice · history · charts · monthly ·
+            assistant · devices · doctor
+   ============================================================ */
+const LS_KEY='speaksense_attempts_v1', LS_BASE='speaksense_baseline_v1', LS_PHR='speaksense_phrases_v1', LS_VOICE='speaksense_voice_v1';
+
+/* target library: category, word, ipa, target sound */
+const WORDS=[
+  {w:'water',ipa:'/ˈwɔː.tər/',cat:'/r/ sound'},
+  {w:'rabbit',ipa:'/ˈræb.ɪt/',cat:'/r/ sound'},
+  {w:'sun',ipa:'/sʌn/',cat:'/s/ sound'},
+  {w:'snake',ipa:'/sneɪk/',cat:'/s/ blend'},
+  {w:'think',ipa:'/θɪŋk/',cat:'/th/ sound'},
+  {w:'ball',ipa:'/bɔːl/',cat:'/l/ sound'},
+  {w:'yellow',ipa:'/ˈjel.oʊ/',cat:'/l/ sound'},
+  {w:'ahh (vowel)',ipa:'/ɑː/',cat:'sustained vowel',sustain:true},
+];
+let MODE='real', TGT=0;
+let recording=false, audioCtx=null, analyser=null, micStream=null, rafViz=null, simTimer=null;
+let recog=null, recogText='';
+let engineName='—';
+let attempts=load(LS_KEY,[]), baseline=load(LS_BASE,null), phrases=load(LS_PHR,['I need help','Thank you','Yes','No','I am hungry','Please wait']);
+let lastRefer=false, curMetric='clarity';
+let voices=[], chosenVoice=load(LS_VOICE,null);
+let cap={rms:[],pitch:[],t0:0,samples:0};
+
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function $(id){return document.getElementById(id)}
+function fmt(n,d=0){return (n==null||isNaN(n))?'—':Number(n).toFixed(d)}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function mean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function std(a){if(a.length<2)return 0;const m=mean(a);return Math.sqrt(mean(a.map(x=>(x-m)**2)))}
+
+const HAS_MIC=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+const HAS_SR=!!SR;
+const HAS_TTS=('speechSynthesis' in window);
+
+/* ---- tabs ---- */
+document.querySelectorAll('.top nav button[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+function switchTab(t){
+  document.querySelectorAll('.top nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  ['coach','voice','history','report','assistant','devices'].forEach(x=>$('tab-'+x).classList.toggle('hidden',x!==t));
+  $('nav').classList.remove('open');
+  if(t==='history')renderHistory();
+  if(t==='report')renderMonthly();
+  if(t==='assistant')renderExercise();
+  if(t==='devices')renderDevices();
+  if(t==='voice')renderVoiceTab();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+/* ---- target picker ---- */
+function buildWordChips(){
+  $('wordChips').innerHTML=WORDS.map((x,i)=>`<span class="wchip ${i===0?'on':''}" onclick="pickWord(${i},this)">${x.w}</span>`).join('');
+}
+function pickWord(i,el){TGT=i;document.querySelectorAll('.wchip').forEach(c=>c.classList.remove('on'));el.classList.add('on');
+  const t=WORDS[i];$('tgtWord').textContent=t.w;$('tgtIpa').textContent=t.ipa;$('tgtCat').textContent=(t.sustain?'Vowel · ':'Word · ')+t.cat;}
+
+/* ---- mode ---- */
+function setMode(m){MODE=m;$('segReal').classList.toggle('on',m==='real');$('segSim').classList.toggle('on',m==='sim');
+  $('modeMsg').textContent=m==='sim'?'— realistic simulated audio (works everywhere).':'— uses your mic; auto-falls-back if blocked.';}
+
+/* ---- engine label ---- */
+function setEngine(){engineName=HAS_MIC?'Web Audio (real mic)':'simulated audio (offline)';
+  $('engineName').textContent=engineName;$('engRow').textContent=engineName;}
+
+/* ============================================================ RECORD */
+async function toggleRecord(){ recording?stopRecord():startRecord(); }
+async function startRecord(){
+  recording=true; recogText='';
+  $('recBtn').innerHTML='■ Stop'; $('recBtn').classList.remove('primary'); $('recBtn').classList.add('dark');
+  $('rec').classList.add('on'); $('baseBtn').disabled=true; $('stageHint').style.display='none';
+  cap={rms:[],pitch:[],t0:Date.now(),samples:0};
+  let usingReal=false;
+  if(MODE==='real'&&HAS_MIC){ usingReal=await startMic(); }
+  if(!usingReal){ $('stageEngine').textContent='demo · animated'; startSim(); }
+  else { $('stageEngine').textContent=engineName; startSR(); }
+  // auto-stop for sustained vs word
+  const dur=WORDS[TGT].sustain?4000:2200;
+  cap.autostop=setTimeout(()=>{if(recording)stopRecord();},dur);
+  liveLoop(dur/1000);
+}
+function liveLoop(dur){const s=Date.now();(function loop(){if(!recording)return;
+  const el=(Date.now()-s)/1000;$('liveStat').innerHTML=`● Listening · ${el.toFixed(1)}s / ${dur.toFixed(1)}s · say “<b>${WORDS[TGT].w}</b>”`;
+  requestAnimationFrame(loop);})();}
+
+async function startMic(){
+  try{
+    micStream=await navigator.mediaDevices.getUserMedia({audio:true});
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=audioCtx.createMediaStreamSource(micStream);
+    analyser=audioCtx.createAnalyser(); analyser.fftSize=2048;
+    src.connect(analyser);
+    vizRealLoop();
+    return true;
+  }catch(e){ return false; }
+}
+function startSR(){
+  if(!HAS_SR)return;
+  try{ recog=new SR(); recog.lang='en-US'; recog.interimResults=false; recog.maxAlternatives=1;
+    recog.onresult=e=>{recogText=(e.results[0][0].transcript||'').toLowerCase().trim();};
+    recog.start();
+  }catch(e){}
+}
+
+/* real-time viz + feature capture */
+const timeBuf=new Float32Array(2048), freqBuf=new Uint8Array(1024);
+function vizRealLoop(){
+  const c=$('viz'),ctx=c.getContext('2d');
+  (function draw(){
+    if(!recording){return;}
+    const w=c.width=c.clientWidth,h=c.height=c.clientHeight;ctx.clearRect(0,0,w,h);
+    analyser.getFloatTimeDomainData(timeBuf); analyser.getByteFrequencyData(freqBuf);
+    // rms loudness
+    let sum=0;for(let i=0;i<timeBuf.length;i++)sum+=timeBuf[i]*timeBuf[i];
+    const rms=Math.sqrt(sum/timeBuf.length); cap.rms.push(rms); cap.samples++;
+    $('micBar').style.width=clamp(rms*600,0,100)+'%';
+    // pitch via autocorrelation
+    const p=autoCorrelate(timeBuf,audioCtx.sampleRate); if(p>0)cap.pitch.push(p);
+    // spectrogram column (scroll)
+    drawSpectroColumn(ctx,w,h,freqBuf);
+    // waveform overlay
+    ctx.strokeStyle='rgba(233,213,255,.9)';ctx.lineWidth=1.5;ctx.beginPath();
+    for(let x=0;x<w;x++){const idx=Math.floor(x/w*timeBuf.length);const y=h/2+timeBuf[idx]*h*0.42;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();
+    rafViz=requestAnimationFrame(draw);
+  })();
+}
+let spectX=0;
+function drawSpectroColumn(ctx,w,h,freq){
+  // shift left by copying — cheap scroll
+  const img=ctx.getImageData(1,0,w-1,h);ctx.putImageData(img,0,0);
+  for(let y=0;y<h;y++){const bin=Math.floor((1-y/h)*(freq.length*0.5));const v=freq[bin]||0;
+    const a=v/255; ctx.fillStyle=`rgba(${120+a*135},${40+a*60},${200},${a*0.9})`; ctx.fillRect(w-1,y,1,1);}
+}
+/* autocorrelation pitch detector */
+function autoCorrelate(buf,sampleRate){
+  let SIZE=buf.length,rms=0;for(let i=0;i<SIZE;i++)rms+=buf[i]*buf[i];rms=Math.sqrt(rms/SIZE);
+  if(rms<0.01)return -1;
+  let r1=0,r2=SIZE-1,thr=0.2;
+  for(let i=0;i<SIZE/2;i++)if(Math.abs(buf[i])<thr){r1=i;break;}
+  for(let i=1;i<SIZE/2;i++)if(Math.abs(buf[SIZE-i])<thr){r2=SIZE-i;break;}
+  buf=buf.slice(r1,r2);SIZE=buf.length;
+  const c=new Array(SIZE).fill(0);
+  for(let i=0;i<SIZE;i++)for(let j=0;j<SIZE-i;j++)c[i]+=buf[j]*buf[j+i];
+  let d=0;while(c[d]>c[d+1])d++;
+  let maxval=-1,maxpos=-1;for(let i=d;i<SIZE;i++)if(c[i]>maxval){maxval=c[i];maxpos=i;}
+  let T0=maxpos;if(T0<=0)return -1;
+  return sampleRate/T0;
+}
+
+/* ---- SIM ---- */
+function startSim(){
+  const c=$('viz'),ctx=c.getContext('2d');let t=0;
+  simTimer=setInterval(()=>{
+    if(!recording)return;
+    const env=Math.min(1,(Date.now()-cap.t0)/300)*Math.max(0,1-(Date.now()-cap.t0)/(WORDS[TGT].sustain?4000:2200));
+    const rms=0.12*env*(0.7+0.3*Math.sin(Date.now()/120))+rnd(0,0.02);
+    cap.rms.push(rms);cap.pitch.push(rnd(150,220)+ (WORDS[TGT].sustain?rnd(-4,4):rnd(-25,25)));cap.samples++;
+    $('micBar').style.width=clamp(rms*600,0,100)+'%';
+  },40);
+  (function draw(){
+    if(!recording)return;const w=c.width=c.clientWidth,h=c.height=c.clientHeight;ctx.clearRect(0,0,w,h);t+=0.2;
+    // fake spectrogram
+    const img=ctx.getImageData(1,0,w-1,h);ctx.putImageData(img,0,0);
+    for(let y=0;y<h;y++){const a=Math.max(0,Math.sin(y*0.05+t)+rnd(-.3,.6))*Math.exp(-y/h*1.5);
+      ctx.fillStyle=`rgba(${140+a*115},${50+a*50},210,${clamp(a,0,1)*0.8})`;ctx.fillRect(w-1,y,1,1);}
+    ctx.strokeStyle='rgba(233,213,255,.9)';ctx.lineWidth=1.6;ctx.beginPath();
+    const env=Math.exp(-Math.pow(((Date.now()-cap.t0)/1000-1),2));
+    for(let x=0;x<w;x++){const y=h/2+Math.sin(x*0.28+t)*h*0.34*env;x?ctx.lineTo(x,y):ctx.moveTo(x,y);}
+    ctx.stroke();requestAnimationFrame(draw);
+  })();
+}
+
+function stopRecord(){
+  if(!recording)return; recording=false;
+  clearTimeout(cap.autostop);clearInterval(simTimer);cancelAnimationFrame(rafViz);
+  if(recog){try{recog.stop()}catch(e){}}
+  if(micStream){micStream.getTracks().forEach(t=>t.stop());micStream=null;}
+  if(audioCtx){try{audioCtx.close()}catch(e){}audioCtx=null;}
+  $('recBtn').innerHTML='● Record attempt';$('recBtn').classList.add('primary');$('recBtn').classList.remove('dark');
+  $('rec').classList.remove('on');$('stageEngine').textContent='done';$('liveStat').textContent='';$('micBar').style.width='0';
+  setTimeout(()=>{ // let SR finalize
+    const m=computeMetrics(); const t=WORDS[TGT];
+    const a={id:Date.now(),date:new Date().toISOString(),word:t.w,cat:t.cat,mode:MODE,engine:engineName,heard:recogText,...m};
+    attempts.push(a);save(LS_KEY,attempts);$('baseBtn').disabled=false;
+    showResults(a);runCoach(a);renderExercise();
+  },350);
+}
+
+/* ============================================================ METRICS */
+function computeMetrics(){
+  const durS=clamp((Date.now()-cap.t0)/1000,0.2,6);
+  const loud=cap.rms.length?Math.round(clamp(mean(cap.rms)*700+30,30,90)):Math.round(rnd(45,70)); // pseudo-dB
+  const pitchMean=cap.pitch.length?Math.round(mean(cap.pitch)):0;
+  const pitchStab=cap.pitch.length? Math.round(clamp(100-std(cap.pitch)/(pitchMean||150)*260,20,99)) : Math.round(rnd(55,90));
+  // clarity: prefer speech-recognition match, else derive from steadiness
+  const target=WORDS[TGT].w.split(' ')[0].toLowerCase();
+  let clarity;
+  if(recogText){ clarity = recogText.includes(target)?Math.round(rnd(82,97)):(levScore(recogText,target)); }
+  else { clarity=Math.round(clamp(0.5*pitchStab+0.3*(loud>45?70:45)+rnd(0,20),35,96)); }
+  const voicedRatio=Math.round(clamp((cap.rms.filter(r=>r>0.02).length/Math.max(1,cap.rms.length))*100,20,100));
+  return {clarity,loudness:loud,pitch:pitchMean,pitchStab,duration:+durS.toFixed(1),voiced:voicedRatio};
+}
+function levScore(a,b){ // rough similarity -> 0..100
+  const m=a.length,n=b.length,d=Array.from({length:m+1},()=>new Array(n+1).fill(0));
+  for(let i=0;i<=m;i++)d[i][0]=i;for(let j=0;j<=n;j++)d[0][j]=j;
+  for(let i=1;i<=m;i++)for(let j=1;j<=n;j++)d[i][j]=Math.min(d[i-1][j]+1,d[i][j-1]+1,d[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  return Math.round(clamp((1-d[m][n]/Math.max(m,n))*100,20,90));
+}
+
+/* ============================================================ RESULTS */
+function deltaBadge(cur,base,goodLow){if(base==null)return '';const d=cur-base;const worse=goodLow?d>0.5:d<-0.5;
+  const cls=Math.abs(d)<.5?'b-ok':(worse?'b-bad':'b-ok');const sign=d>0?'+':'';return `<span class="badge ${cls}">${sign}${fmt(d,0)} vs base</span>`;}
+function tile(k,v,u,pct,color,extra=''){return `<div class="metric fadein"><div class="k">${k}</div>
+  <div class="v">${v}<span class="u"> ${u}</span></div>${pct!=null?`<div class="bar"><i style="width:${clamp(pct,0,100)}%;background:${color}"></i></div>`:''}${extra}</div>`;}
+function showResults(a){
+  $('resSub').innerHTML=`🎯 “<b>${a.word}</b>” · ${new Date(a.date).toLocaleString()} · ${a.mode==='sim'?'demo data':'live mic'}${a.heard?` · heard: “${a.heard}”`:''}`;
+  const b=baseline;
+  $('metricTiles').innerHTML=
+    tile('Clarity',a.clarity,'/100',a.clarity,'var(--brand)',b?deltaBadge(a.clarity,b.clarity,false):'')+
+    tile('Pitch stability',a.pitchStab,'/100',a.pitchStab,'var(--brand)',b?deltaBadge(a.pitchStab,b.pitchStab,false):'')+
+    tile('Loudness',a.loudness,'dB',clamp((a.loudness-30)*1.6,0,100),a.loudness<45?'var(--warn)':'var(--brand)',b?deltaBadge(a.loudness,b.loudness,false):'')+
+    tile('Duration',a.duration,'s',clamp(a.duration*40,0,100),'var(--blue)')+
+    tile('Pitch',a.pitch||'—','Hz',clamp((a.pitch-80)/2,0,100),'var(--teal)')+
+    tile('Voiced',a.voiced,'%',a.voiced,'var(--brand)');
+  const st=a.clarity,label=st>=80?['Clear','#a855f7']:st>=60?['Getting there','#c084fc']:['Keep practicing','#f0abfc'];
+  $('scoreWrap').innerHTML=`<div class="scorehero fadein"><div class="ring" style="--p:${st}"><b>${st}</b></div>
+    <div><div class="lab">Overall clarity</div><div class="big" style="color:${label[1]}">${label[0]}</div>
+    <div class="lab">${b?'compared to your saved baseline':'save this as your baseline to track progress →'}</div></div></div>`;
+  $('radarWrap').classList.remove('hidden');setTimeout(()=>drawRadar($('radarChart'),a,b),30);
+  setPrintMeta(a);renderDevices();
+}
+function setPrintMeta(a){const b=baseline;$('phMeta').innerHTML=`Generated: ${new Date().toLocaleString()}<br>
+  Latest: “${a.word}” · Clarity ${a.clarity}/100<br>${b?'Baseline set '+new Date(b.date).toLocaleDateString():'No baseline saved'} · Attempts: ${attempts.length}<br>
+  <b>Not a medical diagnosis — practice &amp; communication aid only.</b>`;}
+function setBaseline(){const last=attempts[attempts.length-1];if(!last)return;
+  baseline={clarity:last.clarity,pitchStab:last.pitchStab,loudness:last.loudness,duration:last.duration,date:last.date};
+  save(LS_BASE,baseline);showResults(last);runCoach(last);alert('Baseline saved ✓  Future attempts now show progress vs this reference.');}
+
+/* ============================================================ COACH */
+function runCoach(a){
+  const b=baseline,t=WORDS[TGT];let lines=[];
+  const st=a.clarity;
+  const head=st>=80?`Great job — “${a.word}” came through clearly! 🎉`:st>=60?`Good attempt at “${a.word}” — small tweaks will sharpen it.`:`Nice effort. Let’s work on “${a.word}” step by step.`;
+  if(a.heard&&!a.heard.includes(a.word.split(' ')[0].toLowerCase())) lines.push(`I heard “<b>${a.heard}</b>”. Slow down and over-emphasise the target sound.`);
+  else if(a.heard) lines.push(`I clearly recognised “<b>${a.word}</b>” — well done.`);
+  if(a.loudness<45) lines.push(`Your voice was a little soft (<b>${a.loudness} dB</b>). Take a breath and project from your chest.`);
+  if(a.pitchStab<60) lines.push(`Pitch wavered (<b>${a.pitchStab}/100</b>). Try holding a steady tone — the “ahh” vowel drill helps.`);
+  if(t.sustain&&a.duration<2) lines.push(`Try to sustain the vowel longer (you held ~<b>${a.duration}s</b>; aim for 3–5s).`);
+  if(t.cat.includes('/r/')) lines.push(`For <b>/r/</b>: curl the tongue tip up and back without touching the roof. Practice “ar-ar-ar”.`);
+  if(t.cat.includes('/s/')) lines.push(`For <b>/s/</b>: teeth close, tongue behind them, steady airflow — like a gentle hiss.`);
+  if(t.cat.includes('/th/')) lines.push(`For <b>/th/</b>: tongue tip lightly between the teeth, soft air out.`);
+  if(!lines.length) lines.push(`Everything looks solid — keep the streak going and re-test to track progress.`);
+  let ds=null;
+  if(b){const d=a.clarity-b.clarity,pct=b.clarity?Math.round(d/b.clarity*100):0;ds={d,pct,worse:d<-3};
+    if(d>3)lines.push(`✅ Clarity improved <b>${pct}%</b> vs baseline — real progress!`);
+    else if(ds.worse)lines.push(`Clarity dipped vs baseline today — that’s normal; consistency over days is what matters.`);
+  }
+  const refer=st<45||(b&&ds&&ds.worse&&Math.abs(ds.pct)>=25);
+  const verdict=refer?`<b style="color:var(--bad)">Recommendation:</b> consider a session with a speech-language pathologist — tap “Contact an SLP”.`
+    :`<b style="color:var(--teal)">Recommendation:</b> keep practicing daily; re-test to build your trend.`;
+  $('coachOut').innerHTML=`<div class="agentline"><div class="agentav">AI</div><div><h4 style="margin:0">${head}</h4><span class="muted">Rule-based Therapy Coach · on-device</span></div></div>
+    <ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul><p style="margin:11px 0 0">${verdict}</p>`;
+  lastRefer=refer;
+}
+
+/* ============================================================ TTS */
+function loadVoices(){voices=HAS_TTS?speechSynthesis.getVoices():[];
+  const sel=$('voiceSel');if(sel){sel.innerHTML=voices.map((v,i)=>`<option value="${i}" ${chosenVoice===v.name?'selected':''}>${v.name} (${v.lang})</option>`).join('')||'<option>No voices installed</option>';
+    sel.onchange=()=>{chosenVoice=voices[sel.value]?voices[sel.value].name:null;save(LS_VOICE,chosenVoice);};}
+  if($('voiceCount'))$('voiceCount').textContent=voices.length||'0';}
+function speak(text){if(!HAS_TTS||!text)return;const u=new SpeechSynthesisUtterance(text);
+  const v=voices.find(x=>x.name===chosenVoice); if(v)u.voice=v; u.rate=.95; speechSynthesis.cancel(); speechSynthesis.speak(u);}
+function speakTarget(){speak(WORDS[TGT].w.replace(' (vowel)',''));}
+function testVoice(){speak('Hello, this is your SpeakSense voice.');}
+
+/* ============================================================ ASSISTIVE VOICE */
+const CATS={
+  Core:['I','you','want','need','help','more','stop','go','yes','no','please','thank you'],
+  Feelings:['happy','sad','tired','hurt','hungry','thirsty','cold','hot','scared','okay'],
+  Needs:['water','food','toilet','medicine','doctor','rest','phone','home'],
+  People:['mum','dad','friend','nurse','family','me'],
+};
+const NEXT={ // simple on-device next-word prediction
+  'I':['want','need','am','feel'],'want':['water','food','help','to'],'need':['help','water','the','a'],
+  'am':['hungry','tired','okay','happy'],'feel':['tired','sad','happy','okay'],'to':['go','eat','rest','home'],
+  '':['I','you','please','help']
+};
+let aacWords=[];
+function renderVoiceTab(){buildCats('Core');renderAAC();renderSaved();}
+function buildCats(active){
+  $('catChips').innerHTML=Object.keys(CATS).map(c=>`<span class="chip ${c===active?'on':''}" style="${c===active?'background:var(--teal);color:#fff;border-color:var(--teal)':''}" onclick="buildCats('${c}');fillBoard('${c}')">${c}</span>`).join('');
+  fillBoard(active);
+}
+function fillBoard(c){const emo={water:'💧',food:'🍽️',toilet:'🚻',medicine:'💊',doctor:'🩺',home:'🏠',phone:'📱',happy:'😊',sad:'😢',tired:'😴',hurt:'🤕',hungry:'🍔',thirsty:'🥤',help:'🆘',yes:'✅',no:'❌',mum:'👩',dad:'👨',nurse:'🧑‍⚕️'};
+  $('board').innerHTML=CATS[c].map(w=>`<div class="tile" onclick="aacAdd('${w.replace(/'/g,"")}')"><span class="e">${emo[w]||'💬'}</span>${w}</div>`).join('');}
+function renderAAC(){const el=$('aacOut');el.innerHTML=aacWords.length?aacWords.join(' '):'<span class="ph">Tap tiles or predictions to build a sentence…</span>';predict();}
+function aacAdd(w){aacWords.push(w);renderAAC();}
+function aacBackspace(){aacWords.pop();renderAAC();}
+function aacClear(){aacWords=[];renderAAC();}
+function speakAAC(){if(aacWords.length)speak(aacWords.join(' '));}
+function predict(){const last=aacWords.length?aacWords[aacWords.length-1]:'';const opts=NEXT[last]||NEXT[''];
+  $('predRow').innerHTML=opts.map(w=>`<span class="pred" onclick="aacAdd('${w}')">${w} →</span>`).join('');}
+function savePhrase(){if(!aacWords.length)return;const p=aacWords.join(' ');if(!phrases.includes(p)){phrases.unshift(p);save(LS_PHR,phrases);renderSaved();}}
+function renderSaved(){$('savedPhrases').innerHTML=phrases.map(p=>`<span class="chip" onclick="speak('${p.replace(/'/g,"")}')">🔊 ${p}</span>`).join('');}
+
+/* ============================================================ HISTORY + CHARTS */
+function renderHistory(){
+  const s=attempts;
+  $('statCards').innerHTML=
+    statCard('Attempts logged',s.length,'total practice reps')+
+    statCard('Avg clarity',s.length?Math.round(mean(s.map(x=>x.clarity))):'—','/100 across all')+
+    statCard('Best clarity',s.length?Math.max(...s.map(x=>x.clarity)):'—','personal best');
+  const rows=s.slice().reverse().slice(0,50).map(x=>`<tr><td>${new Date(x.date).toLocaleDateString()}</td><td>${x.word}</td>
+    <td><b>${x.clarity}</b></td><td>${x.pitchStab}</td><td>${x.loudness} dB</td><td>${x.duration}s</td>
+    <td><span class="badge ${x.mode==='sim'?'b-warn':'b-ok'}">${x.mode==='sim'?'demo':'live'}</span></td></tr>`).join('');
+  $('histTable').innerHTML=`<thead><tr><th>Date</th><th>Word</th><th>Clarity</th><th>Pitch stab</th><th>Loudness</th><th>Dur</th><th>Src</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class=muted>No attempts yet.</td></tr>'}</tbody>`;
+  plotMetric(curMetric);renderDevices();
+}
+function statCard(k,v,sub){return `<div class="card tight"><div style="font-size:10.5px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.5px">${k}</div>
+  <div style="font-size:30px;font-weight:850;color:var(--ink);line-height:1.1">${v}</div><div class="muted" style="font-size:12px">${sub}</div></div>`;}
+function plotMetric(m,el){curMetric=m;if(el){document.querySelectorAll('[data-metric]').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+  drawLineChart($('trendChart'),attempts.map(s=>({x:new Date(s.date),y:s[m]})),m,baseline?baseline[m]:null);}
+function drawLineChart(cv,data,label,baseVal){
+  if(!cv)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const pL=40,pR=16,pT=16,pB=28,plotW=w-pL-pR,plotH=h-pT-pB;
+  if(!data.length){ctx.fillStyle='#9aa4b2';ctx.font='13px sans-serif';ctx.fillText('No data yet — record attempts or load the sample month.',pL,h/2);return;}
+  const ys=data.map(d=>d.y).concat(baseVal!=null?[baseVal]:[]);let ymin=Math.min(...ys),ymax=Math.max(...ys);
+  if(ymin===ymax){ymin-=5;ymax+=5;}const pad=(ymax-ymin)*.15;ymin-=pad;ymax+=pad;
+  const X=i=>pL+(data.length===1?plotW/2:plotW*i/(data.length-1)),Y=v=>pT+plotH*(1-(v-ymin)/(ymax-ymin));
+  ctx.strokeStyle='#ece9f5';ctx.lineWidth=1;ctx.fillStyle='#9aa4b2';ctx.font='10px sans-serif';
+  for(let g=0;g<=4;g++){const yy=pT+plotH*g/4;ctx.beginPath();ctx.moveTo(pL,yy);ctx.lineTo(w-pR,yy);ctx.stroke();ctx.fillText(Math.round(ymax-(ymax-ymin)*g/4),8,yy+3);}
+  if(baseVal!=null){ctx.strokeStyle='#b7791f';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pL,Y(baseVal));ctx.lineTo(w-pR,Y(baseVal));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#b7791f';ctx.fillText('baseline',w-pR-52,Y(baseVal)-4);}
+  const grad=ctx.createLinearGradient(0,pT,0,pT+plotH);grad.addColorStop(0,'rgba(124,58,237,.22)');grad.addColorStop(1,'rgba(124,58,237,0)');
+  ctx.beginPath();data.forEach((d,i)=>{const x=X(i),y=Y(d.y);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.lineTo(X(data.length-1),pT+plotH);ctx.lineTo(X(0),pT+plotH);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();data.forEach((d,i)=>{const x=X(i),y=Y(d.y);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.strokeStyle='#7c3aed';ctx.lineWidth=2.6;ctx.stroke();
+  data.forEach((d,i)=>{ctx.beginPath();ctx.fillStyle='#7c3aed';ctx.arc(X(i),Y(d.y),3.2,0,7);ctx.fill();});
+  ctx.fillStyle='#6b7684';ctx.font='11px sans-serif';ctx.fillText(label,pL,h-6);
+}
+function drawRadar(cv,a,base){
+  if(!cv)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const cx=w/2,cy=h/2+6,R=Math.min(w,h)/2-34;
+  const axes=[{lab:'Clarity',v:a.clarity/100},{lab:'Pitch',v:a.pitchStab/100},{lab:'Loudness',v:clamp((a.loudness-30)/60,0,1)},{lab:'Duration',v:clamp(a.duration/4,0,1)},{lab:'Voiced',v:a.voiced/100}];
+  const bv=base?[base.clarity/100,base.pitchStab/100,clamp((base.loudness-30)/60,0,1),clamp(base.duration/4,0,1),0.7]:null;
+  const N=axes.length,ang=i=>-Math.PI/2+i*2*Math.PI/N;
+  ctx.strokeStyle='#ece9f5';ctx.lineWidth=1;
+  for(let r=1;r<=4;r++){ctx.beginPath();for(let i=0;i<=N;i++){const aa=ang(i%N),rr=R*r/4;const x=cx+rr*Math.cos(aa),y=cy+rr*Math.sin(aa);i?ctx.lineTo(x,y):ctx.moveTo(x,y);}ctx.stroke();}
+  ctx.fillStyle='#7a8798';ctx.font='10.5px sans-serif';ctx.textAlign='center';
+  axes.forEach((ax,i)=>{const aa=ang(i);ctx.strokeStyle='#f1eef8';ctx.beginPath();ctx.moveTo(cx,cy);ctx.lineTo(cx+R*Math.cos(aa),cy+R*Math.sin(aa));ctx.stroke();
+    ctx.fillStyle='#7a8798';ctx.fillText(ax.lab,cx+(R+16)*Math.cos(aa),cy+(R+14)*Math.sin(aa)+3);});
+  const poly=(vals,stroke,fill,dash)=>{ctx.setLineDash(dash||[]);ctx.beginPath();vals.forEach((v,i)=>{const aa=ang(i),rr=R*clamp(v,0,1);const x=cx+rr*Math.cos(aa),y=cy+rr*Math.sin(aa);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.closePath();if(fill){ctx.fillStyle=fill;ctx.fill();}ctx.strokeStyle=stroke;ctx.lineWidth=2;ctx.stroke();ctx.setLineDash([]);};
+  if(bv)poly(bv,'#b7791f','rgba(183,121,31,.08)',[5,4]);
+  poly(axes.map(a=>a.v),'#7c3aed','rgba(124,58,237,.16)');
+  axes.forEach((ax,i)=>{const aa=ang(i),rr=R*clamp(ax.v,0,1);ctx.beginPath();ctx.fillStyle='#7c3aed';ctx.arc(cx+rr*Math.cos(aa),cy+rr*Math.sin(aa),3,0,7);ctx.fill();});
+}
+function seedDemoHistory(){
+  const now=Date.now(),arr=[];let cl=62;
+  for(let i=27;i>=0;i--){cl=clamp(cl+rnd(-3,5),50,95);const w=WORDS[i%WORDS.length];
+    arr.push({id:now-i*864e5,date:new Date(now-i*864e5).toISOString(),word:w.w,cat:w.cat,mode:'sim',engine:'demo',heard:'',
+      clarity:Math.round(cl),pitchStab:Math.round(clamp(cl+rnd(-10,8),40,98)),loudness:Math.round(rnd(48,72)),
+      duration:+(w.sustain?rnd(2.5,4.5):rnd(0.7,1.6)).toFixed(1),pitch:Math.round(rnd(150,220)),voiced:Math.round(rnd(60,95))});}
+  attempts=arr;save(LS_KEY,attempts);
+  if(!baseline){baseline={clarity:arr[0].clarity,pitchStab:arr[0].pitchStab,loudness:arr[0].loudness,duration:arr[0].duration,date:arr[0].date};save(LS_BASE,baseline);}
+  renderHistory();
+}
+function clearHistory(){if(confirm('Clear all stored attempts?')){attempts=[];save(LS_KEY,attempts);renderHistory();}}
+
+/* ============================================================ MONTHLY */
+function renderMonthly(){
+  const s=attempts;if(!s.length){$('monthlyOut').innerHTML='<em>No data yet — record attempts or load the sample month in History.</em>';return;}
+  const now=new Date(),mName=now.toLocaleString('default',{month:'long',year:'numeric'});
+  const monthS=s.filter(x=>{const d=new Date(x.date);return d.getMonth()===now.getMonth()&&d.getFullYear()===now.getFullYear();});
+  const use=monthS.length?monthS:s,avg=k=>Math.round(mean(use.map(x=>x[k])));
+  const first=use[0],last=use[use.length-1];
+  const trend=(k)=>{const d=last[k]-first[k];return `<span class="badge ${Math.abs(d)<1?'b-ok':(d>0?'b-ok':'b-bad')}">${d>0?'+':''}${d} ${d>=0?'↑':'↓'}</span>`;};
+  $('monthlyOut').innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline">
+      <h3 style="margin:0;font-size:19px">SpeakSense — ${mName}</h3><span class="muted">${use.length} attempts · generated ${now.toLocaleDateString()}</span></div>
+    <div class="grid g4" style="margin:16px 0">
+      ${miniStat('Avg clarity',avg('clarity')+'/100',trend('clarity'))}
+      ${miniStat('Pitch stability',avg('pitchStab')+'/100',trend('pitchStab'))}
+      ${miniStat('Avg loudness',avg('loudness')+' dB',trend('loudness'))}
+      ${miniStat('Avg duration',avg('duration')+' s','')}</div>
+    <div class="report"><h4>Summary</h4><p style="margin:0">${monthlyNarrative(use,avg)}</p></div>
+    <div class="card tight" style="margin-top:16px;box-shadow:none"><h3>Clarity across the month</h3><canvas id="monthChart" class="chartbox"></canvas></div>
+    <table style="margin-top:16px"><thead><tr><th>Date</th><th>Word</th><th>Clarity</th><th>Pitch stab</th><th>Loudness</th></tr></thead><tbody>
+      ${use.slice(-12).reverse().map(x=>`<tr><td>${new Date(x.date).toLocaleDateString()}</td><td>${x.word}</td><td><b>${x.clarity}</b></td><td>${x.pitchStab}</td><td>${x.loudness} dB</td></tr>`).join('')}</tbody></table>`;
+  setTimeout(()=>{const cv=$('monthChart');if(cv)drawLineChart(cv,use.map(x=>({x:new Date(x.date),y:x.clarity})),'clarity',baseline?baseline.clarity:null);},30);
+}
+function miniStat(k,v,badge){return `<div class="metric"><div class="k">${k}</div><div class="v" style="font-size:21px">${v}</div><div>${badge}</div></div>`;}
+function monthlyNarrative(use,avg){
+  const cl=avg('clarity'),ps=avg('pitchStab'),ld=avg('loudness');
+  const d=use[use.length-1].clarity-use[0].clarity;let p=[];
+  p.push(`Over ${use.length} practice attempts, average clarity was <b>${cl}/100</b>.`);
+  p.push(d>3?`Clarity <b>improved ${d} points</b> across the month — excellent consistency.`:d<-3?`Clarity <b>dipped ${Math.abs(d)} points</b> — keep practising daily.`:`Clarity held steady.`);
+  p.push(ps<60?`Pitch stability (${ps}/100) has room to grow — the sustained-vowel drill helps.`:`Pitch stability averaged a healthy ${ps}/100.`);
+  p.push(ld<48?`Loudness averaged ${ld} dB — work on projecting a bit more.`:`Loudness (${ld} dB) is in a good range.`);
+  p.push((cl<50)?`<b style="color:var(--bad)">Consider a session with a speech-language pathologist this month.</b>`:`Great trajectory — keep the daily streak and re-test regularly.`);
+  return p.join(' ');
+}
+
+/* ============================================================ ASSISTANT */
+const KB=[
+ {q:['clarity','clear','understood','intelligib'],a:s=>`Clarity reflects how recognisable your word was — yours is <b>${s?s.clarity+'/100':'—'}</b>. Slow down, over-emphasise the target sound, and use “Hear the word” to model it first.`},
+ {q:['pitch','tone','monotone','wavered'],a:s=>`Pitch stability was <b>${s?s.pitchStab+'/100':'—'}</b>. Practise a steady “ahh” for 3–5s, then glide up and down (“do-re-mi”) to control it.`},
+ {q:['loud','volume','soft','quiet','project'],a:s=>`Loudness was <b>${s?s.loudness+' dB':'—'}</b>. Take a breath, relax your shoulders, and project from your chest — imagine talking to someone across the room.`},
+ {q:['/r/','r sound','rabbit'],a:s=>`For <b>/r/</b>: curl the tongue tip up and slightly back without touching the roof of the mouth. Warm up with “ar-ar-ar”, then words like “rabbit, water, car”.`},
+ {q:['/s/','s sound','snake','lisp'],a:s=>`For <b>/s/</b>: teeth gently closed, tongue tip behind the top teeth, steady thin airflow — a soft hiss. Practise “sun, snake, bus”.`},
+ {q:['/th/','th sound','think'],a:s=>`For <b>/th/</b>: put the tongue tip lightly between your teeth and blow soft air. Practise “think, bath, mother”.`},
+ {q:['baseline','trend','progress','improve','better'],a:s=>`Save a good attempt as your <b>baseline</b> on the Coach tab. Then every attempt shows progress vs it, and History/Monthly plot your trend. Practise 5–10 min daily.`},
+ {q:['assistive','voice','can\'t speak','nonverbal','aac'],a:s=>`Open the <b>Assistive Voice</b> tab: tap words or use predictions to build a sentence, then “Speak” to say it aloud. Save your common phrases for one-tap use.`},
+ {q:['cure','fix','heal','treat'],a:s=>`Good news: speech clarity <b>usually improves a lot with regular practice</b>. Follow the exercise plan, track it here, and see a speech-language pathologist for a tailored program.`},
+ {q:['doctor','slp','therapist','consult'],a:s=>`Tap the “Contact an SLP” button anytime — I’ll attach your latest progress so the session starts with context.`},
+ {q:['privacy','data','store','safe','offline'],a:s=>`Your audio is analysed <b>on your device</b> and nothing is uploaded. Export or clear your data anytime in Devices/History.`},
+ {q:['how','work','ai','mic'],a:s=>`On a phone I use the mic (Web Audio) to measure pitch, loudness and duration, plus speech recognition to check if the word was understood. In this preview I simulate that so you can see the flow.`},
+];
+function botReply(text){const s=attempts[attempts.length-1],t=text.toLowerCase();
+  let hit=KB.find(k=>k.q.some(w=>t.includes(w)));
+  if(!hit)return s?`Quick read of your latest attempt — clarity <b>${s.clarity}/100</b>, pitch stability <b>${s.pitchStab}/100</b>, loudness <b>${s.loudness} dB</b>. Ask me about “clarity”, “pitch”, “/r/”, “progress”, or “assistive voice”.`
+    :`Record an attempt first, then ask about clarity, pitch, loudness, a specific sound, or how to improve. You can also open Assistive Voice or Contact an SLP.`;
+  return hit.a(s);}
+function pushMsg(t,who){const l=$('chatlog'),d=document.createElement('div');d.className='msg '+who;d.innerHTML=t;l.appendChild(d);l.scrollTop=l.scrollHeight;}
+function sendChat(){const i=$('chatInput'),v=i.value.trim();if(!v)return;pushMsg(v,'me');i.value='';setTimeout(()=>pushMsg(botReply(v),'bot'),180);}
+function initChat(){$('chatlog').innerHTML='';pushMsg('Hi! I’m your SpeakSense assistant. I explain your results and suggest speech exercises — all on-device, no internet needed. What would you like to know?','bot');
+  $('chatChips').innerHTML=['Explain my clarity','Help with /r/ sound','How do I improve pitch?','Can this be cured?','Talk to an SLP'].map(c=>`<span class="chip" onclick="quick('${c}')">${c}</span>`).join('');
+  $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});}
+function quick(c){if(c==='Talk to an SLP'){openDoctor();return;}$('chatInput').value=c;sendChat();}
+function renderExercise(){const s=attempts[attempts.length-1];if(!s){$('exerciseOut').innerHTML='<em>Record an attempt to get a tailored plan.</em>';return;}
+  let ex=[];
+  if(s.pitchStab<65)ex.push(['Sustained vowel','Hold “ahh” steadily for 3–5s ×5 — builds pitch control']);
+  if(s.loudness<48)ex.push(['Projection drill','Count 1–5, each louder — from a whisper to a strong voice ×3']);
+  if(s.cat&&s.cat.includes('/r/'))ex.push(['/r/ warm-up','“ar-ar-ar” then “rabbit, water, car” ×10']);
+  if(s.cat&&s.cat.includes('/s/'))ex.push(['/s/ hiss','Long “sss” then “sun, snake, bus” ×10']);
+  if(s.clarity<60)ex.push(['Slow &amp; clear','Say the word in slow-motion, then normal speed ×5']);
+  if(!ex.length)ex.push(['Maintenance set','5 minutes of your target words daily — keep the streak']);
+  $('exerciseOut').innerHTML=`<ul style="padding-left:19px;margin:0">${ex.map(e=>`<li style="margin-bottom:9px"><b>${e[0]}</b> — ${e[1]}</li>`).join('')}</ul>
+    <p class="muted" style="margin-top:11px">Practise 5–10 min daily and re-test to watch your trend improve.</p>`;
+}
+
+/* ============================================================ DEVICES */
+function renderDevices(){$('scr').textContent=window.innerWidth+'×'+window.innerHeight;
+  $('hasMic').textContent=HAS_MIC?'available':'blocked / none';
+  $('hasSR').textContent=HAS_SR?'available':'not supported';
+  $('storedN').textContent=attempts.length;$('engRow').textContent=engineName;loadVoices();}
+function renderVoiceTab(){loadVoices();}
+function exportAll(){const blob=new Blob([JSON.stringify({attempts,baseline,phrases},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='speaksense-data.json';a.click();}
+
+/* ============================================================ DOCTOR */
+function openDoctor(){const s=attempts[attempts.length-1];
+  $('docReason').innerHTML=s?`Sharing with the SLP: clarity <b>${s.clarity}/100</b>, pitch stability <b>${s.pitchStab}/100</b>, loudness <b>${s.loudness} dB</b>${lastRefer?' · <b style="color:var(--bad)">flagged for review</b>':''}.`
+    :`Record an attempt first so your SLP gets your latest progress.`;
+  $('docModal').classList.add('on');}
+function closeDoctor(){$('docModal').classList.remove('on');}
+$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')closeDoctor();});
+
+/* ============================================================ INIT */
+(function init(){
+  buildWordChips(); setMode('real'); setEngine();
+  if(!HAS_MIC){setMode('sim');$('modeMsg').textContent='— no microphone detected, demo mode on.';}
+  initChat(); renderDevices(); renderVoiceTab();
+  if(HAS_TTS){ speechSynthesis.onvoiceschanged=loadVoices; loadVoices(); }
+  window.addEventListener('resize',()=>{
+    if(!$('tab-history').classList.contains('hidden'))plotMetric(curMetric);
+    if(!$('radarWrap').classList.contains('hidden')&&attempts.length)drawRadar($('radarChart'),attempts[attempts.length-1],baseline);
+  });
+  if(attempts.length){showResults(attempts[attempts.length-1]);runCoach(attempts[attempts.length-1]);renderExercise();}
+})();
+</script>
+</body>
+</html>
