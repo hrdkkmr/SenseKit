@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+<title>HearSense — AI Hearing Screening &amp; Monitoring</title>
+<style>
+  :root{
+    --ink:#0b1220;--slate:#41505f;--mute:#7a8798;--line:#e6eaf0;--bg:#f4f8fb;--card:#fff;--card2:#f9fbfc;
+    --brand:#b7791f;--brand2:#e0a63b;--blue:#2563eb;--teal:#0e9488;--green:#0a7d54;--red:#dc2626;
+    --ok:#0a7d54;--warn:#b7791f;--bad:#dc2626;
+    --sh-sm:0 1px 2px rgba(11,18,32,.06);--sh:0 2px 6px rgba(11,18,32,.06),0 12px 28px rgba(11,18,32,.07);--sh-lg:0 20px 50px rgba(11,18,32,.12);
+    --r:18px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--slate);-webkit-font-smoothing:antialiased;line-height:1.55}
+  a{color:var(--blue);text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+  h1,h2,h3,h4{color:var(--ink)}
+  header.top{position:sticky;top:0;z-index:50;background:rgba(244,248,251,.82);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+  .top .wrap{display:flex;align-items:center;gap:14px;height:64px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:800;color:var(--ink);font-size:19px;letter-spacing:-.4px}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--brand2));display:grid;place-items:center;box-shadow:var(--sh-sm)}
+  .logo svg{width:20px;height:20px}
+  .tag{font-size:10.5px;font-weight:800;color:var(--brand);background:#fdf3e0;padding:3px 9px;border-radius:999px;letter-spacing:.3px}
+  .top nav{margin-left:auto;display:flex;gap:4px}
+  .top nav button{border:0;background:transparent;color:var(--slate);font-weight:650;font-size:14px;padding:9px 13px;border-radius:10px;cursor:pointer;transition:.15s}
+  .top nav button:hover{background:#eaf0f4;color:var(--ink)}
+  .top nav button.active{background:var(--ink);color:#fff}
+  .doc-btn{border:0;background:linear-gradient(135deg,var(--teal),#14b8a6);color:#fff;font-weight:700;font-size:13px;padding:10px 15px;border-radius:11px;cursor:pointer;box-shadow:var(--sh-sm);white-space:nowrap}
+  .doc-btn:hover{filter:brightness(1.06)}
+  .menu-toggle{display:none;margin-left:auto;background:none;border:0;font-size:22px;cursor:pointer;color:var(--ink)}
+  @media(max-width:900px){
+    .top nav{position:absolute;top:64px;left:0;right:0;flex-direction:column;background:#fff;padding:8px;border-bottom:1px solid var(--line);box-shadow:var(--sh);display:none}
+    .top nav.open{display:flex}.menu-toggle{display:block}.top nav button{text-align:left}.doc-btn{padding:8px 11px;font-size:12px}
+  }
+  .hero{padding:36px 0 6px}
+  .hero .kick{display:inline-flex;align-items:center;gap:7px;background:#fdf3e0;color:var(--brand);font-weight:750;font-size:12px;padding:6px 12px;border-radius:999px;margin-bottom:14px}
+  .hero .kick .dot{width:7px;height:7px;border-radius:50%;background:var(--brand2);box-shadow:0 0 0 3px rgba(224,166,59,.2)}
+  .hero h1{font-size:36px;line-height:1.07;margin:0 0 10px;letter-spacing:-1px;font-weight:850}
+  .hero h1 .grad{background:linear-gradient(120deg,var(--brand),#d97706);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:16px;max-width:640px;margin:0}
+  @media(max-width:600px){.hero h1{font-size:28px}}
+  .modebar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:14px 0 2px}
+  .seg{display:inline-flex;background:#e9eff3;border-radius:12px;padding:4px;gap:2px}
+  .seg button{border:0;background:transparent;font-weight:700;font-size:13px;color:var(--slate);padding:8px 14px;border-radius:9px;cursor:pointer;transition:.15s}
+  .seg button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+  .muted{color:var(--mute);font-size:13px}
+  .statuspill{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;border:1px solid var(--line);background:#fff;color:var(--mute)}
+  .statuspill b{color:var(--ink)}
+  .grid{display:grid;gap:18px}
+  .g2{grid-template-columns:1.12fr .88fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:960px){.g2{grid-template-columns:1fr}.g4{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:640px){.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:20px;box-shadow:var(--sh)}
+  .card.tight{padding:16px}
+  .card h3{margin:0 0 3px;font-size:16.5px;font-weight:780;letter-spacing:-.2px}
+  .card .sub{font-size:12.5px;color:var(--mute);margin:0 0 14px}
+  .cardhead{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+  .cardhead .ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;flex:none}
+  .cardhead h3{margin:0}
+  .tests{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:14px}
+  @media(max-width:520px){.tests{grid-template-columns:1fr}}
+  .testbtn{display:flex;gap:10px;align-items:center;text-align:left;border:1.5px solid var(--line);background:#fff;border-radius:13px;padding:12px;cursor:pointer;transition:.15s}
+  .testbtn:hover{border-color:#e0c48a;background:var(--card2)}
+  .testbtn.on{border-color:var(--brand);background:#fdf6ea;box-shadow:0 0 0 3px rgba(183,121,31,.08)}
+  .testbtn .emo{font-size:22px;flex:none}.testbtn .tt{font-weight:750;color:var(--ink);font-size:13.5px}.testbtn .td{font-size:11.5px;color:var(--mute)}
+  /* ear selector */
+  .ears{display:inline-flex;background:#e9eff3;border-radius:10px;padding:3px;gap:2px;margin-left:auto}
+  .ears button{border:0;background:transparent;font-weight:700;font-size:12px;color:var(--slate);padding:6px 12px;border-radius:8px;cursor:pointer}
+  .ears button.on{background:#fff;color:var(--ink);box-shadow:var(--sh-sm)}
+  /* test stage */
+  .stage{position:relative;background:radial-gradient(120% 120% at 50% 0%,#33260f,#0d0a04);border-radius:16px;overflow:hidden;min-height:230px;display:grid;place-items:center;padding:20px}
+  .stagecontent{position:relative;z-index:2;text-align:center;width:100%}
+  .stageIdle{color:#d6b98a;font-size:13px}
+  .noiseC{position:absolute;inset:0;width:100%;height:100%;opacity:.5}
+  .promptbig{font-size:16px;color:#f5d999;font-weight:700;margin-bottom:14px}
+  .digitshow{font-size:46px;font-weight:850;color:#fff;letter-spacing:12px;min-height:56px}
+  .keypad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:340px;margin:16px auto 0}
+  .key{border:0;background:rgba(255,255,255,.1);color:#fff;font-weight:800;font-size:18px;padding:12px 0;border-radius:11px;cursor:pointer;transition:.12s}
+  .key:hover{background:rgba(255,255,255,.22)}
+  .entry{font-size:30px;font-weight:850;color:#fcd34d;letter-spacing:8px;min-height:38px;margin-top:12px}
+  .toneBtns{display:flex;gap:10px;justify-content:center;margin-top:14px}
+  .heardBtn{border:0;border-radius:12px;padding:13px 22px;font-weight:800;font-size:15px;cursor:pointer}
+  .heardYes{background:linear-gradient(135deg,#0a7d54,#12b981);color:#fff}
+  .heardNo{background:rgba(255,255,255,.14);color:#fff}
+  .progline{position:absolute;left:0;bottom:0;height:5px;background:var(--brand2);width:0;z-index:3;transition:width .3s}
+  .btnrow{display:flex;gap:10px;flex-wrap:wrap;margin-top:15px}
+  .btn{border:0;border-radius:12px;padding:12px 18px;font-weight:750;font-size:14px;cursor:pointer;box-shadow:var(--sh-sm);transition:.15s;display:inline-flex;align-items:center;gap:7px}
+  .btn:hover{transform:translateY(-1px)}
+  .btn.primary{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff}
+  .btn.teal{background:var(--teal);color:#fff}.btn.dark{background:var(--ink);color:#fff}
+  .btn.ghost{background:#fff;color:var(--ink);border:1.5px solid var(--line);box-shadow:none}
+  .btn.ghost:hover{border-color:#e0c48a;background:var(--card2)}
+  .btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+  .metrics{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+  .metric{background:var(--card2);border:1px solid var(--line);border-radius:14px;padding:14px}
+  .metric .k{font-size:10.5px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.5px}
+  .metric .v{font-size:26px;font-weight:850;color:var(--ink);margin-top:3px;line-height:1}
+  .metric .u{font-size:12px;color:var(--mute);font-weight:650}
+  .badge{display:inline-block;font-size:10.5px;font-weight:800;padding:2px 8px;border-radius:999px;margin-top:7px}
+  .b-ok{background:#e7f6ef;color:var(--ok)}.b-warn{background:#fbf1df;color:var(--warn)}.b-bad{background:#fdeaea;color:var(--bad)}
+  .noiseGate{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:13px;background:var(--card2);border:1px solid var(--line);margin-bottom:12px}
+  .ngbar{flex:1;height:8px;border-radius:999px;background:#e9eff3;overflow:hidden}
+  .ngbar>i{display:block;height:100%;width:0;border-radius:999px;background:var(--green)}
+  .scorehero{display:flex;align-items:center;gap:16px;margin-top:16px;padding:15px;border-radius:14px;background:linear-gradient(120deg,#241a0c,#3a2b12);color:#fff}
+  .ring{--p:0;width:74px;height:74px;border-radius:50%;flex:none;display:grid;place-items:center;background:conic-gradient(var(--brand2) calc(var(--p)*1%),rgba(255,255,255,.12) 0);position:relative}
+  .ring::before{content:"";position:absolute;inset:7px;border-radius:50%;background:#1c1408}.ring b{position:relative;font-size:18px;font-weight:850}
+  .scorehero .lab{font-size:12.5px;color:#d6b98a}.scorehero .big{font-size:17px;font-weight:800;margin-top:2px}
+  .report{border-left:4px solid var(--brand);background:linear-gradient(180deg,#fdf7ec,#fffdf9);border-radius:13px;padding:15px 17px}
+  .report h4{margin:0 0 5px;font-size:15px}.report ul{margin:9px 0 0;padding-left:19px}.report li{margin-bottom:6px;font-size:13.8px}
+  .agentline{display:flex;gap:11px;align-items:center;margin-bottom:9px}
+  .agentav{flex:none;width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),#f0c060);display:grid;place-items:center;color:#fff;font-weight:850;font-size:13px;box-shadow:var(--sh-sm)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px}
+  th,td{text-align:left;padding:10px 11px;border-bottom:1px solid var(--line)}
+  th{font-size:10.5px;text-transform:uppercase;letter-spacing:.4px;color:var(--mute);font-weight:800}
+  tbody tr:hover td{background:var(--card2)}
+  .chartbox{width:100%;height:240px}
+  .section{padding:30px 0}
+  .section h2{font-size:25px;margin:0 0 4px;letter-spacing:-.5px}
+  .section .lead{color:var(--mute);margin:0 0 20px;font-size:14.5px;max-width:640px}
+  .kv{display:flex;justify-content:space-between;font-size:13.5px;padding:8px 0;border-bottom:1px dashed var(--line)}
+  .kv:last-child{border-bottom:0}.kv b{color:var(--ink)}
+  .hidden{display:none!important}
+  .chatlog{height:300px;overflow:auto;display:flex;flex-direction:column;gap:9px;padding:6px 2px}
+  .msg{max-width:86%;padding:10px 13px;border-radius:14px;font-size:13.6px;line-height:1.5}
+  .msg.bot{background:#eef2f5;color:var(--ink);align-self:flex-start;border-bottom-left-radius:4px}
+  .msg.me{background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;align-self:flex-end;border-bottom-right-radius:4px}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}
+  .chip{font-size:12.5px;font-weight:650;padding:7px 12px;border-radius:999px;border:1.5px solid var(--line);background:#fff;color:var(--slate);cursor:pointer;transition:.15s}
+  .chip:hover{border-color:var(--brand);color:var(--brand);background:#fdf6ea}
+  .disc{font-size:11.5px;color:var(--mute);margin-top:13px;padding-top:11px;border-top:1px solid var(--line)}
+  footer{padding:28px 0 46px;color:var(--mute);font-size:12.5px;text-align:center}footer b{color:var(--slate)}
+  .modal{position:fixed;inset:0;background:rgba(11,18,32,.55);display:none;place-items:center;z-index:90;padding:18px;backdrop-filter:blur(3px)}
+  .modal.on{display:grid;animation:fade .2s}@keyframes fade{from{opacity:0}}
+  .modal .box{background:#fff;border-radius:20px;max-width:470px;width:100%;padding:24px;box-shadow:var(--sh-lg)}
+  .cons{display:flex;gap:11px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:13px;margin-top:11px}
+  .cons .av{width:42px;height:42px;border-radius:11px;background:#e7f6f4;color:var(--teal);display:grid;place-items:center;font-weight:800;font-size:18px;flex:none}
+  .cons .nm{font-weight:750;color:var(--ink);font-size:14px}
+  .fadein{animation:up .4s cubic-bezier(.2,.8,.2,1)}@keyframes up{from{opacity:0;transform:translateY(8px)}}
+  .print-only{display:none}
+  #printHeader{padding:0 20px}
+  .ph-top{display:flex;justify-content:space-between;align-items:flex-start;padding-top:6px}
+  .ph-brand{display:flex;gap:11px;align-items:center}
+  .ph-logo{width:36px;height:36px;border-radius:9px;background:linear-gradient(135deg,var(--brand),var(--brand2));color:#fff;display:grid;place-items:center;font-weight:900;font-size:18px}
+  .ph-brand b{font-size:17px;color:var(--ink)}.ph-brand span{font-size:11px;color:var(--mute)}
+  .ph-meta{font-size:11px;color:var(--mute);text-align:right;line-height:1.6}
+  .ph-rule{height:3px;background:linear-gradient(90deg,var(--brand),var(--teal));border-radius:2px;margin-top:10px}
+  @media print{
+    @page{margin:14mm}
+    header.top,.modebar,.btnrow,.doc-btn,.chips,#chatInputRow,.noprint,.stage,.tests,.menu-toggle,.noiseGate{display:none!important}
+    .print-only{display:block!important}
+    .card{box-shadow:none;border:1px solid #d8dee6;break-inside:avoid;page-break-inside:avoid}
+    body{background:#fff}.section,.hero{padding:8px 0}
+    .hero .kick,.hero p{display:none}.hero h1{font-size:22px}
+    .report,.scorehero,.badge{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="landing.html" style="color:var(--ink)">
+      <span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M6 11a6 6 0 1112 0c0 3-2 4-2 6a3 3 0 01-3 3M9 11a3 3 0 016 0" stroke="#fff" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+      HearSense
+    </a>
+    <span class="tag">iQOO HEALTHTECH</span>
+    <button class="menu-toggle" onclick="document.getElementById('nav').classList.toggle('open')">☰</button>
+    <nav id="nav">
+      <button data-tab="test" class="active">Hearing Test</button>
+      <button data-tab="history">History &amp; Trends</button>
+      <button data-tab="report">Monthly Report</button>
+      <button data-tab="assistant">AI Assistant</button>
+      <button data-tab="devices">Devices</button>
+      <button class="doc-btn" onclick="openDoctor()">📞 Contact Audiologist</button>
+    </nav>
+  </div>
+</header>
+
+<div id="printHeader" class="print-only">
+  <div class="ph-top">
+    <div class="ph-brand"><span class="ph-logo">H</span><div><b>HearSense</b><br><span>Hearing Screening Report</span></div></div>
+    <div class="ph-meta" id="phMeta"></div>
+  </div>
+  <div class="ph-rule"></div>
+</div>
+
+<!-- ============ TEST ============ -->
+<main id="tab-test">
+  <section class="wrap hero">
+    <span class="kick"><span class="dot"></span> On-device · calibration-free · your data never leaves your phone</span>
+    <h1>Check your hearing in<br><span class="grad">three minutes.</span></h1>
+    <p>HearSense screens your hearing with a calibration-free digits-in-noise test and a pure-tone sweep, then
+       tracks changes over time — with an on-device AI explaining every result.</p>
+    <div class="modebar">
+      <div class="seg">
+        <button id="segReal" class="on" onclick="setMode('real')">🎧 Real audio</button>
+        <button id="segSim" onclick="setMode('sim')">▶️ Demo mode</button>
+      </div>
+      <span class="statuspill" id="enginePill">engine: <b id="engineName">checking…</b></span>
+      <span class="muted" id="modeMsg"></span>
+    </div>
+  </section>
+
+  <section class="wrap grid g2" style="padding-bottom:6px">
+    <div class="card">
+      <div class="cardhead"><div class="ic" style="background:#fdf3e0">🎯</div><div style="flex:1"><h3>Hearing test</h3><div class="sub" style="margin:0">Use headphones for best results.</div></div>
+        <div class="ears" id="earSel"><button class="on" onclick="setEar('left',this)">Left</button><button onclick="setEar('right',this)">Right</button></div>
+      </div>
+      <div class="tests" id="testGrid"></div>
+      <div class="noiseGate" id="noiseGate">
+        <span style="font-size:18px">🎙️</span>
+        <div style="flex:1">
+          <div style="font-size:12px;font-weight:700;color:var(--ink)">Room noise check</div>
+          <div class="ngbar"><i id="ngBar"></i></div>
+        </div>
+        <b id="ngVal" style="font-size:13px;color:var(--mute)">tap check</b>
+      </div>
+      <div class="stage" id="stage">
+        <canvas class="noiseC" id="noiseC"></canvas>
+        <div class="progline" id="prog"></div>
+        <div class="stagecontent" id="stageContent">
+          <div class="stageIdle">Pick a test and press <b>Start</b>. Headphones recommended.<br><span style="opacity:.7">In this preview, audio may be limited — Demo mode always works.</span></div>
+        </div>
+      </div>
+      <div class="btnrow">
+        <button class="btn primary" id="startBtn" onclick="startTest()">▶ Start test</button>
+        <button class="btn ghost" id="noiseBtn" onclick="checkNoise()">🎙️ Check room noise</button>
+        <button class="btn dark" id="baseBtn" onclick="setBaseline()" disabled>★ Save baseline</button>
+      </div>
+      <div id="liveStat" class="muted" style="margin-top:11px;min-height:18px"></div>
+    </div>
+
+    <div class="card">
+      <div class="cardhead"><div class="ic" style="background:#eef2ff">📊</div><div><h3>Results</h3><div class="sub" id="resSub" style="margin:0">Run a test to see your hearing profile.</div></div></div>
+      <div class="metrics" id="metricTiles"></div>
+      <div id="scoreWrap"></div>
+      <div id="audioWrap" class="hidden" style="margin-top:16px">
+        <div class="sub" style="margin-bottom:4px">Audiogram <span class="muted">(lower = need louder = worse; gold dashed = baseline)</span></div>
+        <canvas id="audiogram" style="width:100%;height:220px"></canvas>
+      </div>
+    </div>
+  </section>
+
+  <section class="wrap" style="padding:6px 20px 12px">
+    <div class="card">
+      <div class="agentline"><div class="agentav">AI</div><div><h3 style="margin:0;font-size:16.5px">Hearing Explainer</h3><div class="sub" style="margin:0">Rule-based on-device agent — turns your result into plain language.</div></div></div>
+      <div id="coachOut" class="report"><em>Your explanation appears here after a test.</em></div>
+      <div class="btnrow noprint">
+        <button class="btn teal" onclick="window.print()">🖨️ Print / Save PDF</button>
+        <button class="btn ghost" onclick="switchTab('history')">📈 View trends</button>
+        <button class="btn ghost" onclick="switchTab('assistant')">💬 Ask the assistant</button>
+        <button class="btn ghost" onclick="openDoctor()">🩺 Contact audiologist</button>
+      </div>
+      <p class="disc">⚠️ HearSense is a screening &amp; monitoring tool, <b>not a diagnosis</b>. Pure-tone results are relative (not clinical dB HL). For confirmed loss, ear pain, or sudden changes, see an audiologist / ENT.</p>
+    </div>
+  </section>
+</main>
+
+<!-- ============ HISTORY ============ -->
+<main id="tab-history" class="hidden">
+  <section class="wrap section">
+    <h2>History &amp; trends</h2>
+    <p class="lead">Every test is stored on your device. Track your hearing over time and catch changes early.</p>
+    <div class="grid g3" id="statCards"></div>
+    <div class="card" style="margin-top:18px">
+      <h3>Trend over time</h3><p class="sub">Pick a metric. Your baseline is the dashed gold line.</p>
+      <div class="chips" style="margin-bottom:12px">
+        <span class="chip on" data-metric="score" onclick="plotMetric('score',this)">Hearing score</span>
+        <span class="chip" data-metric="snr" onclick="plotMetric('snr',this)">Speech-in-noise (SNR)</span>
+        <span class="chip" data-metric="highFreq" onclick="plotMetric('highFreq',this)">High-freq threshold</span>
+      </div>
+      <canvas id="trendChart" class="chartbox"></canvas>
+    </div>
+    <div class="card" style="margin-top:18px">
+      <h3>Test log</h3>
+      <div style="overflow:auto"><table id="histTable"></table></div>
+      <div class="btnrow noprint">
+        <button class="btn ghost" onclick="seedDemoHistory()">✨ Load sample months</button>
+        <button class="btn ghost" onclick="clearHistory()">🗑️ Clear history</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ MONTHLY ============ -->
+<main id="tab-report" class="hidden">
+  <section class="wrap section">
+    <h2>Monthly report</h2>
+    <p class="lead">Auto-generated summary — ready to print or share with an audiologist.</p>
+    <div class="card"><div id="monthlyOut"><em>No data yet — run tests or load the sample months in History.</em></div>
+      <div class="btnrow noprint">
+        <button class="btn teal" onclick="window.print()">🖨️ Print / Save as PDF</button>
+        <button class="btn ghost" onclick="switchTab('history')">Back to history</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ ASSISTANT ============ -->
+<main id="tab-assistant" class="hidden">
+  <section class="wrap section">
+    <h2>AI Health Assistant</h2>
+    <p class="lead">A rule-based assistant that explains your results and hearing-health tips — no internet or API key required.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="chatlog" id="chatlog"></div>
+        <div class="chips" id="chatChips"></div>
+        <div class="modebar" id="chatInputRow" style="margin-top:11px">
+          <input id="chatInput" placeholder="Ask about your results…" style="flex:1;padding:11px 13px;border:1.5px solid var(--line);border-radius:11px;font-size:14px;outline:none"/>
+          <button class="btn primary" onclick="sendChat()">Send</button>
+        </div>
+        <p class="disc">Educational guidance only — not a diagnosis. Use “Contact Audiologist” for real concerns.</p>
+      </div>
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#fdf3e0">🧩</div><h3>Hearing-health tips</h3></div>
+        <p class="sub" style="margin-top:-6px">Guidance matched to your latest result.</p>
+        <div id="tipsOut"><em>Run a test to get tailored tips.</em></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<!-- ============ DEVICES ============ -->
+<main id="tab-devices" class="hidden">
+  <section class="wrap section">
+    <h2>Devices &amp; sync</h2>
+    <p class="lead">Headphones improve accuracy; view reports on any device.</p>
+    <div class="grid g2">
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#fdf3e0">🎧</div><h3>Audio output</h3></div>
+        <p class="sub" style="margin-top:-6px">Test volume &amp; balance before you screen.</p>
+        <div class="kv"><span>Recommended</span><b>Wired headphones, quiet room</b></div>
+        <div class="btnrow">
+          <button class="btn primary" onclick="testTone('left')">🔊 Test left</button>
+          <button class="btn primary" onclick="testTone('right')">🔊 Test right</button>
+        </div>
+        <p class="note" style="margin-top:12px;font-size:12px;color:#7a5c17;background:#fdf6e3;border:1px solid #f0e2b6;padding:10px 13px;border-radius:11px">Calibrated headphone profiles &amp; localized digit sets (Hindi/regional) ship in <b>Phase 2 (native app)</b>, enabling true dB HL.</p>
+      </div>
+      <div class="card">
+        <div class="cardhead"><div class="ic" style="background:#eef2ff">💻</div><h3>Laptop &amp; web</h3></div>
+        <p class="sub" style="margin-top:-6px">Responsive web app — the same report opens on any device.</p>
+        <div class="kv"><span>Screen</span><b id="scr">—</b></div>
+        <div class="kv"><span>Audio engine</span><b id="engRow">—</b></div>
+        <div class="kv"><span>Microphone (noise gate)</span><b id="hasMic">—</b></div>
+        <div class="kv"><span>Speech synthesis (digits)</span><b id="hasTTS">—</b></div>
+        <div class="kv"><span>Stored tests</span><b id="storedN">0</b></div>
+        <div class="btnrow">
+          <button class="btn ghost" onclick="exportAll()">⬇️ Export data (JSON)</button>
+          <button class="btn ghost" onclick="switchTab('report')">🖨️ Monthly report</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="wrap">
+  <b>HearSense</b> · on-device hearing screening &amp; monitoring · Hackathon Round-1 web prototype.<br>
+  Phase 2 = native app with calibrated headphone profiles &amp; localized digit sets. Not a medical device.
+</footer>
+
+<div class="modal" id="docModal">
+  <div class="box">
+    <h3>Contact an Audiologist</h3>
+    <p class="sub">Based on your latest screening, HearSense suggests these next steps.</p>
+    <div id="docReason" class="report" style="margin-bottom:6px"></div>
+    <div class="cons"><div class="av">👂</div><div><div class="nm">Dr. P. Sharma</div><span class="muted">Audiologist · hearing aids &amp; diagnostics · video consult · today</span></div></div>
+    <div class="cons"><div class="av">🩺</div><div><div class="nm">Dr. M. Khan</div><span class="muted">ENT specialist · video consult · tomorrow</span></div></div>
+    <div class="btnrow" style="margin-top:16px">
+      <button class="btn primary" onclick="alert('Demo: this would open a booking / tele-consult flow with your screening attached.')">Book a consult</button>
+      <button class="btn ghost" onclick="closeDoctor()">Close</button>
+    </div>
+    <p class="disc">Demo action for the pitch video. In production this connects to a tele-audiology partner with consent.</p>
+  </div>
+</div>
+
+<script>
+/* ============================================================
+   HearSense v1 — industry-structured single-file app
+   Modules: state · audio(Web Audio tones + noise) · TTS digits ·
+            noise gate(mic) · DIN staircase · pure-tone sweep ·
+            metrics · baseline/drift · explainer · history ·
+            charts(line+audiogram) · monthly · assistant · devices · doctor
+   ============================================================ */
+const LS_KEY='hearsense_tests_v1', LS_BASE='hearsense_baseline_v1';
+const TESTS={
+  din:{emo:'🔢',name:'Digits-in-Noise',desc:'Calibration-free · recommended'},
+  tone:{emo:'🎚️',name:'Pure-tone sweep',desc:'Frequency profile · use headphones'},
+};
+const FREQS=[500,1000,2000,4000,8000];
+let MODE='real', TEST='din', EAR='left';
+let audioCtx=null, engineName='—', running=false;
+let tests=load(LS_KEY,[]), baseline=load(LS_BASE,null);
+let lastRefer=false, curMetric='score', noiseAnim=null;
+let din={}, tone={};
+
+function load(k,d){try{return JSON.parse(localStorage.getItem(k))??d}catch(e){return d}}
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function $(id){return document.getElementById(id)}
+function clamp(x,a,b){return Math.max(a,Math.min(b,x))}
+function rnd(a,b){return a+Math.random()*(b-a)}
+function mean(a){return a.length?a.reduce((x,y)=>x+y,0)/a.length:0}
+function ri(a,b){return Math.floor(rnd(a,b+1))}
+
+const HAS_AUDIO=!!(window.AudioContext||window.webkitAudioContext);
+const HAS_MIC=!!(navigator.mediaDevices&&navigator.mediaDevices.getUserMedia);
+const HAS_TTS=('speechSynthesis' in window);
+
+document.querySelectorAll('.top nav button[data-tab]').forEach(b=>b.onclick=()=>switchTab(b.dataset.tab));
+function switchTab(t){
+  document.querySelectorAll('.top nav button[data-tab]').forEach(b=>b.classList.toggle('active',b.dataset.tab===t));
+  ['test','history','report','assistant','devices'].forEach(x=>$('tab-'+x).classList.toggle('hidden',x!==t));
+  $('nav').classList.remove('open');
+  if(t==='history')renderHistory();if(t==='report')renderMonthly();if(t==='assistant')renderTips();if(t==='devices')renderDevices();
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+function buildTests(){$('testGrid').innerHTML=Object.entries(TESTS).map(([k,t])=>
+  `<button class="testbtn ${k==='din'?'on':''}" data-test="${k}" onclick="pickTest('${k}',this)"><span class="emo">${t.emo}</span><span><span class="tt">${t.name}</span><br><span class="td">${t.desc}</span></span></button>`).join('');}
+function pickTest(k,el){TEST=k;document.querySelectorAll('.testbtn').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+function setEar(e,el){EAR=e;el.parentElement.querySelectorAll('button').forEach(b=>b.classList.remove('on'));el.classList.add('on');}
+function setMode(m){MODE=m;$('segReal').classList.toggle('on',m==='real');$('segSim').classList.toggle('on',m==='sim');
+  $('modeMsg').textContent=m==='sim'?'— simulated results (works everywhere).':'— plays real tones/noise; use headphones.';}
+function setEngine(){engineName=HAS_AUDIO?'Web Audio (real tones)':'simulated (offline)';$('engineName').textContent=engineName;$('engRow').textContent=engineName;}
+function ensureCtx(){if(!audioCtx&&HAS_AUDIO){audioCtx=new (window.AudioContext||window.webkitAudioContext)();}return audioCtx;}
+
+/* ---- pan helper (ear) ---- */
+function makeChain(){const ctx=ensureCtx();const g=ctx.createGain();const pan=ctx.createStereoPanner?ctx.createStereoPanner():null;
+  if(pan){pan.pan.value=EAR==='left'?-1:1;g.connect(pan);pan.connect(ctx.destination);}else{g.connect(ctx.destination);}return g;}
+/* ---- pure tone ---- */
+function playTone(freq,gainVal,ms){return new Promise(res=>{const ctx=ensureCtx();if(!ctx){setTimeout(res,ms);return;}
+  const o=ctx.createOscillator();o.type='sine';o.frequency.value=freq;const g=makeChain();g.gain.value=0;
+  o.connect(g);o.start();const t=ctx.currentTime;g.gain.linearRampToValueAtTime(gainVal,t+0.02);
+  g.gain.setValueAtTime(gainVal,t+ms/1000-0.03);g.gain.linearRampToValueAtTime(0,t+ms/1000);
+  o.stop(t+ms/1000+0.02);setTimeout(res,ms+40);});}
+function testTone(ear){const old=EAR;EAR=ear;playTone(1000,0.15,500).then(()=>EAR=old);}
+/* ---- noise burst ---- */
+function playNoise(gainVal,ms){return new Promise(res=>{const ctx=ensureCtx();if(!ctx){setTimeout(res,ms);return;}
+  const n=ctx.sampleRate*ms/1000|0;const buf=ctx.createBuffer(1,n,ctx.sampleRate);const d=buf.getChannelData(0);
+  for(let i=0;i<n;i++)d[i]=Math.random()*2-1;const src=ctx.createBufferSource();src.buffer=buf;
+  const g=makeChain();g.gain.value=gainVal;src.connect(g);src.start();setTimeout(res,ms+20);});}
+/* ---- spoken digits (TTS) ---- */
+function sayDigits(arr){return new Promise(res=>{if(!HAS_TTS){setTimeout(res,1400);return;}
+  const u=new SpeechSynthesisUtterance(arr.join(', '));u.rate=.85;u.onend=res;speechSynthesis.cancel();speechSynthesis.speak(u);
+  setTimeout(res,2600);});}
+
+/* ============================================================ NOISE GATE (mic) */
+async function checkNoise(){
+  if(MODE==='sim'||!HAS_MIC){const v=ri(28,40);paintNoise(v);return v;}
+  try{
+    const s=await navigator.mediaDevices.getUserMedia({audio:true});
+    const ctx=new (window.AudioContext||window.webkitAudioContext)();
+    const src=ctx.createMediaStreamSource(s);const an=ctx.createAnalyser();an.fftSize=1024;src.connect(an);
+    const buf=new Float32Array(an.fftSize);let peak=0,frames=0;
+    await new Promise(r=>{const iv=setInterval(()=>{an.getFloatTimeDomainData(buf);let sum=0;for(let i=0;i<buf.length;i++)sum+=buf[i]*buf[i];
+      const rms=Math.sqrt(sum/buf.length);peak=Math.max(peak,rms);frames++;if(frames>18){clearInterval(iv);r();}},60);});
+    s.getTracks().forEach(t=>t.stop());ctx.close();
+    const dB=Math.round(clamp(30+peak*300,28,80));paintNoise(dB);return dB;
+  }catch(e){const v=ri(30,45);paintNoise(v);return v;}
+}
+function paintNoise(dB){const pct=clamp((dB-25)/45*100,0,100);$('ngBar').style.width=pct+'%';
+  const ok=dB<=45;$('ngBar').style.background=ok?'var(--green)':(dB<=55?'var(--brand)':'var(--bad)');
+  $('ngVal').textContent=`${dB} dB · ${ok?'OK':'too noisy'}`;$('ngVal').style.color=ok?'var(--green)':'var(--bad)';return ok;}
+
+/* background animated noise on stage */
+function stageNoise(){const c=$('noiseC'),ctx=c.getContext('2d');
+  (function draw(){if(!running){ctx.clearRect(0,0,c.width,c.height);return;}
+    const w=c.width=c.clientWidth,h=c.height=c.clientHeight;ctx.clearRect(0,0,w,h);
+    ctx.fillStyle='rgba(224,166,59,.12)';for(let x=0;x<w;x+=3){const bh=Math.random()*h*0.5;ctx.fillRect(x,(h-bh)/2,2,bh);}
+    requestAnimationFrame(draw);})();}
+
+/* ============================================================ START TEST */
+async function startTest(){
+  if(running)return;
+  const nOK = await checkNoise();
+  running=true;$('startBtn').disabled=true;$('baseBtn').disabled=true;stageNoise();
+  if(TEST==='din') await runDIN(); else await runTone();
+  running=false;$('startBtn').disabled=false;$('baseBtn').disabled=false;$('prog').style.width='0';
+}
+
+/* ---------- DIN adaptive staircase ---------- */
+async function runDIN(){
+  din={snr:0,history:[],trials:0,correct:0,reversals:0};
+  let snr=0; // dB SNR (speech - noise); we adapt this
+  const maxTrials=8; let dir=0;
+  for(let i=0;i<maxTrials;i++){
+    if(!running)break;
+    din.trials=i+1;$('prog').style.width=((i+1)/maxTrials*100)+'%';
+    const digits=[ri(0,9),ri(0,9),ri(0,9)];
+    renderDINtrial(digits,snr);
+    if(MODE==='real'){ await playNoise(0.12,300); await sayDigits(digits); }
+    else { await new Promise(r=>setTimeout(r,700)); }
+    const answer = await waitDINanswer(digits);
+    const correct = answer.join('')===digits.join('') || (MODE==='sim'&&Math.random()< clamp(0.5+snr/-14,0.15,0.95));
+    din.history.push({snr,correct});
+    if(correct){din.correct++;snr-=2;} else {snr+=2;}
+    din.snr=snr;
+  }
+  finishDIN();
+}
+let dinResolver=null,dinEntry=[];
+function renderDINtrial(digits,snr){
+  dinEntry=[];
+  $('stageContent').innerHTML=`<div class="promptbig">Listen (${EAR} ear), then tap what you heard</div>
+    <div class="digitshow">? · ? · ?</div>
+    <div class="entry" id="dinEntry"></div>
+    <div class="keypad">${[0,1,2,3,4,5,6,7,8,9].map(n=>`<button class="key" onclick="dinKey(${n})">${n}</button>`).join('')}</div>
+    <div class="toneBtns"><button class="heardBtn heardNo" onclick="dinKey('x')">⌫ clear</button></div>`;
+  $('liveStat').innerHTML=`Trial ${din.trials}/8 · noise level adapting…`;
+}
+function dinKey(n){ if(n==='x'){dinEntry=[];} else if(dinEntry.length<3){dinEntry.push(n);}
+  const el=$('dinEntry'); if(el)el.textContent=dinEntry.join(' ');
+  if(dinEntry.length===3&&dinResolver){const r=dinResolver;dinResolver=null;setTimeout(()=>r(dinEntry.slice()),250);}}
+function waitDINanswer(digits){return new Promise(res=>{ dinResolver=res;
+  if(MODE==='sim'){ setTimeout(()=>{ if(dinResolver){const r=dinResolver;dinResolver=null; r([ri(0,9),ri(0,9),ri(0,9)]); } },600); } });}
+function finishDIN(){
+  // SNR threshold = mean of last few reversal SNRs (lower = better hearing)
+  const snrs=din.history.slice(-4).map(h=>h.snr);
+  const snrThresh=Math.round(mean(snrs.length?snrs:[din.snr]));
+  const pctCorrect=Math.round(din.correct/Math.max(1,din.trials)*100);
+  saveResult({snr:snrThresh, pctCorrect});
+}
+
+/* ---------- Pure-tone sweep ---------- */
+async function runTone(){
+  const thresholds={};
+  for(let fi=0;fi<FREQS.length;fi++){
+    if(!running)break;const f=FREQS[fi];
+    $('prog').style.width=((fi+1)/FREQS.length*100)+'%';
+    let level = await runToneFreq(f,fi);
+    thresholds[f]=level;
+  }
+  // hearing "threshold" per freq: higher gain needed = worse. store as 0..100 (higher=better)
+  saveResult({thresholds});
+}
+let toneResolver=null;
+function runToneFreq(freq,fi){
+  return new Promise(async resolve=>{
+    // descending levels; user clicks "I hear it"
+    let heardAt=null;
+    const levels=[0.28,0.18,0.11,0.06,0.03,0.015];
+    for(let li=0;li<levels.length;li++){
+      if(!running){resolve(50);return;}
+      $('stageContent').innerHTML=`<div class="promptbig">${freq} Hz · ${EAR} ear</div>
+        <div style="color:#d6b98a;font-size:13px;margin-bottom:6px">Press “I hear it” as soon as you do</div>
+        <div class="toneBtns"><button class="heardBtn heardYes" id="heardBtn">🔊 I hear it</button><button class="heardBtn heardNo" id="skipBtn">Can’t hear</button></div>`;
+      let clicked=false;
+      const done=new Promise(r=>{ $('heardBtn').onclick=()=>{clicked=true;r('yes');}; $('skipBtn').onclick=()=>r('no'); });
+      if(MODE==='real'){ playTone(freq,levels[li],700); }
+      const winner=await Promise.race([done,new Promise(r=>setTimeout(()=>r('timeout'),MODE==='sim'?400:1400))]);
+      if(MODE==='sim'){ // simulate: high freq harder
+        const simHeard = Math.random() < clamp(0.95 - li*0.12 - (freq>=4000?0.15:0),0.05,0.98);
+        if(simHeard){heardAt=li;} else {if(heardAt!=null)break;}
+        if(li===levels.length-1&&heardAt==null)heardAt=levels.length-1;
+        continue;
+      }
+      if(winner==='yes'){heardAt=li;} else if(heardAt!=null){break;}
+    }
+    // convert index to a 0..100 score (heard soft tone = better)
+    const idx=heardAt==null?levels.length-1:heardAt;
+    const score=Math.round(clamp(30+idx*13,0,100));
+    resolve(score);
+  });
+}
+
+/* ============================================================ SAVE + METRICS */
+function saveResult(partial){
+  const ear=EAR;
+  let rec={id:Date.now(),date:new Date().toISOString(),test:TEST,ear,mode:MODE,engine:engineName};
+  if(TEST==='din'){
+    rec.snr=partial.snr; rec.pctCorrect=partial.pctCorrect;
+    // score: SNR -9(best)..0(poor) -> 100..40
+    rec.score=Math.round(clamp(100+(partial.snr)*6,25,99));
+    rec.highFreq=null;
+    rec.category = rec.snr<=-7?'Normal':rec.snr<=-4?'Slight':rec.snr<=-1?'Mild':'Refer';
+  } else {
+    rec.thresholds=partial.thresholds;
+    const vals=FREQS.map(f=>partial.thresholds[f]);
+    rec.score=Math.round(mean(vals));
+    rec.highFreq=Math.round(mean([partial.thresholds[4000],partial.thresholds[8000]]));
+    rec.snr=null;
+    rec.category = rec.score>=80?'Normal':rec.score>=65?'Slight':rec.score>=50?'Mild':'Refer';
+  }
+  tests.push(rec);save(LS_KEY,tests);$('baseBtn').disabled=false;
+  showResults(rec);runExplainer(rec);renderTips();
+  $('stageContent').innerHTML=`<div class="promptbig" style="color:#86efac">✓ Test complete</div><div style="color:#d6b98a;font-size:13px">See your results on the right.</div>`;
+}
+
+/* ============================================================ RESULTS */
+function catBadge(c){return c==='Normal'?'b-ok':c==='Refer'?'b-bad':'b-warn';}
+function tile(k,v,u,extra=''){return `<div class="metric fadein"><div class="k">${k}</div><div class="v">${v}<span class="u"> ${u}</span></div>${extra}</div>`;}
+function showResults(r){
+  $('resSub').innerHTML=`${TESTS[r.test].emo} <b>${TESTS[r.test].name}</b> · ${r.ear} ear · ${new Date(r.date).toLocaleString()} · ${r.mode==='sim'?'demo':'real audio'}`;
+  const b=baseline;
+  let tiles='';
+  tiles+=tile('Hearing score',r.score,'/100',`<span class="badge ${catBadge(r.category)}">${r.category}</span>`);
+  if(r.test==='din'){tiles+=tile('Speech-in-noise',r.snr,'dB SNR',b&&b.snr!=null?deltaBadge(r.snr,b.snr,true):'');
+    tiles+=tile('Digits correct',r.pctCorrect,'%');tiles+=tile('Ear',r.ear==='left'?'Left':'Right','');}
+  else {tiles+=tile('High-freq',r.highFreq,'/100');tiles+=tile('Low-freq',Math.round(mean([r.thresholds[500],r.thresholds[1000]])),'/100');tiles+=tile('Ear',r.ear==='left'?'Left':'Right','');}
+  $('metricTiles').innerHTML=tiles;
+  const st=r.score,label=st>=80?['Normal range','#12b981']:st>=60?['Mild concern','#e0a63b']:['See a specialist','#f87171'];
+  $('scoreWrap').innerHTML=`<div class="scorehero fadein"><div class="ring" style="--p:${st}"><b>${st}</b></div>
+    <div><div class="lab">Hearing screen (${r.ear} ear)</div><div class="big" style="color:${label[1]}">${label[0]}</div>
+    <div class="lab">${b?'compared to your saved baseline':'save this as your baseline to track change →'}</div></div></div>`;
+  if(r.test==='tone'){$('audioWrap').classList.remove('hidden');setTimeout(()=>drawAudiogram($('audiogram'),r,b),30);}
+  else{$('audioWrap').classList.add('hidden');}
+  setPrintMeta(r);renderDevices();
+}
+function deltaBadge(cur,base,goodLow){if(base==null)return '';const d=cur-base;const worse=goodLow?d>0.5:d<-0.5;
+  const cls=Math.abs(d)<.5?'b-ok':(worse?'b-bad':'b-ok');const sign=d>0?'+':'';return `<span class="badge ${cls}">${sign}${d} vs base</span>`;}
+function setPrintMeta(r){const b=baseline;$('phMeta').innerHTML=`Generated: ${new Date().toLocaleString()}<br>
+  Latest: ${TESTS[r.test].name} (${r.ear}) · ${r.category} · score ${r.score}/100<br>${b?'Baseline set '+new Date(b.date).toLocaleDateString():'No baseline saved'} · Tests: ${tests.length}<br>
+  <b>Screening only — not clinical dB HL or a diagnosis.</b>`;}
+function setBaseline(){const last=tests[tests.length-1];if(!last)return;
+  baseline={score:last.score,snr:last.snr,highFreq:last.highFreq,date:last.date};save(LS_BASE,baseline);
+  showResults(last);runExplainer(last);alert('Baseline saved ✓  Future tests now show change vs this reference.');}
+
+/* audiogram chart */
+function drawAudiogram(cv,r,base){
+  if(!cv)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const pL=40,pR=16,pT=16,pB=30,plotW=w-pL-pR,plotH=h-pT-pB;
+  ctx.strokeStyle='#eef1f6';ctx.lineWidth=1;ctx.fillStyle='#9aa4b2';ctx.font='10px sans-serif';ctx.textAlign='center';
+  FREQS.forEach((f,i)=>{const x=pL+plotW*i/(FREQS.length-1);ctx.beginPath();ctx.moveTo(x,pT);ctx.lineTo(x,pT+plotH);ctx.stroke();ctx.fillText(f>=1000?(f/1000)+'k':f,x,h-8);});
+  ctx.textAlign='right';for(let g=0;g<=4;g++){const yy=pT+plotH*g/4;ctx.beginPath();ctx.moveTo(pL,yy);ctx.lineTo(w-pR,yy);ctx.stroke();ctx.fillText(100-g*25,pL-6,yy+3);}
+  const X=i=>pL+plotW*i/(FREQS.length-1),Y=v=>pT+plotH*(1-v/100);
+  if(base&&base.highFreq!=null){}
+  ctx.strokeStyle='#b7791f';ctx.setLineDash([]);ctx.lineWidth=2.6;ctx.beginPath();
+  FREQS.forEach((f,i)=>{const y=Y(r.thresholds[f]);i?ctx.lineTo(X(i),y):ctx.moveTo(X(i),y);});ctx.stroke();
+  FREQS.forEach((f,i)=>{ctx.beginPath();ctx.fillStyle=r.ear==='left'?'#2563eb':'#dc2626';ctx.arc(X(i),Y(r.thresholds[f]),4,0,7);ctx.fill();});
+  ctx.textAlign='left';ctx.fillStyle='#6b7684';ctx.font='11px sans-serif';ctx.fillText(`${r.ear} ear · higher = better`,pL,h-6);
+}
+
+/* ============================================================ EXPLAINER */
+function runExplainer(r){
+  const b=baseline;let lines=[];
+  const head=r.category==='Normal'?'Your hearing screen looks normal. 👂':r.category==='Refer'?'This screen suggests you should get a professional check.':'A mild concern showed up — worth watching.';
+  if(r.test==='din'){
+    lines.push(`Your speech-in-noise threshold was <b>${r.snr} dB SNR</b> (${r.pctCorrect}% digits correct). ${r.snr<=-7?'That’s within the normal range.':r.snr<=-4?'That’s a slight difficulty hearing in noise.':'You needed a favourable signal — hearing in noise may be reduced.'}`);
+  } else {
+    lines.push(`Across frequencies your average score was <b>${r.score}/100</b>. High-frequency score was <b>${r.highFreq}/100</b>${r.highFreq<60?' — high-frequency hearing (2–4 kHz) may be reduced, a common early pattern.':' — high frequencies look okay.'}`);
+  }
+  if(b){const d=r.score-b.score;if(d<=-8)lines.push(`⚠️ Your score dropped <b>${Math.abs(d)} points</b> vs baseline. If this holds across tests, see an audiologist.`);else if(d>=8)lines.push(`✅ Your score improved <b>${d} points</b> vs baseline.`);else lines.push(`Compared to baseline, your hearing looks stable.`);}
+  lines.push(`Tip: test in a quiet room with the same headphones each time for the most reliable trend.`);
+  const refer=r.category==='Refer'||(b&&r.score-b.score<=-12);
+  const verdict=refer?`<b style="color:var(--bad)">Recommendation:</b> book a professional hearing test — tap “Contact Audiologist”.`
+    :`<b style="color:var(--brand)">Recommendation:</b> re-test monthly to monitor your trend.`;
+  $('coachOut').innerHTML=`<div class="agentline"><div class="agentav">AI</div><div><h4 style="margin:0">${head}</h4><span class="muted">Rule-based Hearing Explainer · on-device</span></div></div>
+    <ul>${lines.map(l=>`<li>${l}</li>`).join('')}</ul><p style="margin:11px 0 0">${verdict}</p>`;
+  lastRefer=refer;
+}
+
+/* ============================================================ HISTORY + CHART */
+function renderHistory(){
+  const s=tests;
+  $('statCards').innerHTML=
+    statCard('Tests logged',s.length,'total screens')+
+    statCard('Avg score',s.length?Math.round(mean(s.map(x=>x.score))):'—','/100 across all')+
+    statCard('Best score',s.length?Math.max(...s.map(x=>x.score)):'—','personal best');
+  const rows=s.slice().reverse().slice(0,50).map(x=>`<tr><td>${new Date(x.date).toLocaleDateString()}</td><td>${TESTS[x.test].emo} ${x.test}</td><td>${x.ear}</td>
+    <td><b>${x.score}</b></td><td>${x.snr!=null?x.snr+' dB':'—'}</td><td><span class="badge ${catBadge(x.category)}">${x.category}</span></td>
+    <td><span class="badge ${x.mode==='sim'?'b-warn':'b-ok'}">${x.mode==='sim'?'demo':'live'}</span></td></tr>`).join('');
+  $('histTable').innerHTML=`<thead><tr><th>Date</th><th>Test</th><th>Ear</th><th>Score</th><th>SNR</th><th>Result</th><th>Src</th></tr></thead><tbody>${rows||'<tr><td colspan=7 class=muted>No tests yet.</td></tr>'}</tbody>`;
+  plotMetric(curMetric);renderDevices();
+}
+function statCard(k,v,sub){return `<div class="card tight"><div style="font-size:10.5px;color:var(--mute);font-weight:800;text-transform:uppercase;letter-spacing:.5px">${k}</div><div style="font-size:30px;font-weight:850;color:var(--ink);line-height:1.1">${v}</div><div class="muted" style="font-size:12px">${sub}</div></div>`;}
+function plotMetric(m,el){curMetric=m;if(el){document.querySelectorAll('[data-metric]').forEach(c=>c.classList.remove('on'));el.classList.add('on');}
+  const data=tests.filter(s=>s[m]!=null).map(s=>({x:new Date(s.date),y:s[m]}));
+  drawLineChart($('trendChart'),data,m,baseline&&baseline[m]!=null?baseline[m]:null);}
+function drawLineChart(cv,data,label,baseVal){
+  if(!cv)return;const dpr=window.devicePixelRatio||1,w=cv.clientWidth,h=cv.clientHeight;
+  cv.width=w*dpr;cv.height=h*dpr;const ctx=cv.getContext('2d');ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,w,h);
+  const pL=40,pR=16,pT=16,pB=28,plotW=w-pL-pR,plotH=h-pT-pB;
+  if(!data.length){ctx.fillStyle='#9aa4b2';ctx.font='13px sans-serif';ctx.fillText('No data for this metric yet.',pL,h/2);return;}
+  const ys=data.map(d=>d.y).concat(baseVal!=null?[baseVal]:[]);let ymin=Math.min(...ys),ymax=Math.max(...ys);
+  if(ymin===ymax){ymin-=5;ymax+=5;}const pad=(ymax-ymin)*.15;ymin-=pad;ymax+=pad;
+  const X=i=>pL+(data.length===1?plotW/2:plotW*i/(data.length-1)),Y=v=>pT+plotH*(1-(v-ymin)/(ymax-ymin));
+  ctx.strokeStyle='#eef1f6';ctx.lineWidth=1;ctx.fillStyle='#9aa4b2';ctx.font='10px sans-serif';
+  for(let g=0;g<=4;g++){const yy=pT+plotH*g/4;ctx.beginPath();ctx.moveTo(pL,yy);ctx.lineTo(w-pR,yy);ctx.stroke();ctx.fillText(Math.round(ymax-(ymax-ymin)*g/4),8,yy+3);}
+  if(baseVal!=null){ctx.strokeStyle='#b7791f';ctx.setLineDash([5,4]);ctx.beginPath();ctx.moveTo(pL,Y(baseVal));ctx.lineTo(w-pR,Y(baseVal));ctx.stroke();ctx.setLineDash([]);ctx.fillStyle='#b7791f';ctx.fillText('baseline',w-pR-52,Y(baseVal)-4);}
+  const grad=ctx.createLinearGradient(0,pT,0,pT+plotH);grad.addColorStop(0,'rgba(183,121,31,.22)');grad.addColorStop(1,'rgba(183,121,31,0)');
+  ctx.beginPath();data.forEach((d,i)=>{const x=X(i),y=Y(d.y);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.lineTo(X(data.length-1),pT+plotH);ctx.lineTo(X(0),pT+plotH);ctx.closePath();ctx.fillStyle=grad;ctx.fill();
+  ctx.beginPath();data.forEach((d,i)=>{const x=X(i),y=Y(d.y);i?ctx.lineTo(x,y):ctx.moveTo(x,y);});ctx.strokeStyle='#b7791f';ctx.lineWidth=2.6;ctx.stroke();
+  data.forEach((d,i)=>{ctx.beginPath();ctx.fillStyle='#b7791f';ctx.arc(X(i),Y(d.y),3.2,0,7);ctx.fill();});
+  ctx.fillStyle='#6b7684';ctx.font='11px sans-serif';ctx.fillText(label,pL,h-6);
+}
+function seedDemoHistory(){
+  const now=Date.now(),arr=[];let sc=82;
+  for(let i=27;i>=0;i--){sc=clamp(sc+rnd(-4,3),58,92);const isDin=i%2===0;const ear=i%2?'left':'right';
+    const snr=Math.round(clamp(-9+(90-sc)*0.12,-9,2));const cat=sc>=80?'Normal':sc>=65?'Slight':sc>=50?'Mild':'Refer';
+    arr.push({id:now-i*864e5,date:new Date(now-i*864e5).toISOString(),test:isDin?'din':'tone',ear,mode:'sim',engine:'demo',
+      score:Math.round(sc),snr:isDin?snr:null,pctCorrect:isDin?ri(60,95):null,highFreq:isDin?null:Math.round(clamp(sc-rnd(5,18),30,95)),
+      thresholds:isDin?null:{500:Math.round(sc+rnd(0,8)),1000:Math.round(sc+rnd(-2,6)),2000:Math.round(sc-rnd(2,10)),4000:Math.round(sc-rnd(8,20)),8000:Math.round(sc-rnd(10,25))},category:cat});}
+  tests=arr;save(LS_KEY,tests);
+  if(!baseline){baseline={score:arr[0].score,snr:arr[0].snr,highFreq:arr[0].highFreq,date:arr[0].date};save(LS_BASE,baseline);}
+  renderHistory();
+}
+function clearHistory(){if(confirm('Clear all stored tests?')){tests=[];save(LS_KEY,tests);renderHistory();}}
+
+/* ============================================================ MONTHLY */
+function renderMonthly(){
+  const s=tests;if(!s.length){$('monthlyOut').innerHTML='<em>No data yet — run tests or load the sample months in History.</em>';return;}
+  const now=new Date(),mName=now.toLocaleString('default',{month:'long',year:'numeric'});
+  const use=s;const avg=k=>Math.round(mean(use.filter(x=>x[k]!=null).map(x=>x[k])));
+  const first=use[0],last=use[use.length-1];const d=last.score-first.score;
+  $('monthlyOut').innerHTML=`<div style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:8px;align-items:baseline">
+      <h3 style="margin:0;font-size:19px">HearSense — ${mName}</h3><span class="muted">${use.length} tests · generated ${now.toLocaleDateString()}</span></div>
+    <div class="grid g4" style="margin:16px 0">
+      ${miniStat('Avg score',avg('score')+'/100',trendBadge(d))}
+      ${miniStat('Avg SNR',(avg('snr')||'—')+' dB','')}
+      ${miniStat('High-freq',(avg('highFreq')||'—')+'/100','')}
+      ${miniStat('Tests',use.length,'')}</div>
+    <div class="report"><h4>Summary</h4><p style="margin:0">${monthlyNarrative(use,avg,d)}</p></div>
+    <div class="card tight" style="margin-top:16px;box-shadow:none"><h3>Hearing score across time</h3><canvas id="monthChart" class="chartbox"></canvas></div>
+    <table style="margin-top:16px"><thead><tr><th>Date</th><th>Test</th><th>Ear</th><th>Score</th><th>Result</th></tr></thead><tbody>
+      ${use.slice(-12).reverse().map(x=>`<tr><td>${new Date(x.date).toLocaleDateString()}</td><td>${x.test}</td><td>${x.ear}</td><td><b>${x.score}</b></td><td>${x.category}</td></tr>`).join('')}</tbody></table>`;
+  setTimeout(()=>{const cv=$('monthChart');if(cv)drawLineChart(cv,use.map(x=>({x:new Date(x.date),y:x.score})),'score',baseline?baseline.score:null);},30);
+}
+function miniStat(k,v,badge){return `<div class="metric"><div class="k">${k}</div><div class="v" style="font-size:21px">${v}</div><div>${badge}</div></div>`;}
+function trendBadge(d){return `<span class="badge ${Math.abs(d)<3?'b-ok':(d>0?'b-ok':'b-bad')}">${d>0?'+':''}${d} ${d>=0?'↑':'↓'}</span>`;}
+function monthlyNarrative(use,avg,d){
+  const sc=avg('score');let p=[];
+  p.push(`Across ${use.length} tests your average hearing score was <b>${sc}/100</b>.`);
+  p.push(d>3?`Your score <b>improved ${d} points</b> — likely quieter test conditions or better technique.`:d<-3?`Your score <b>dropped ${Math.abs(d)} points</b> — worth monitoring closely.`:`Your hearing stayed stable.`);
+  const hf=avg('highFreq');if(hf)p.push(hf<60?`High-frequency hearing (${hf}/100) is the area to watch — common with age/noise exposure.`:`High frequencies (${hf}/100) look healthy.`);
+  p.push(sc<55?`<b style="color:var(--bad)">Please book a professional hearing test this month.</b>`:`No red flags — keep screening monthly and protect your ears from loud noise.`);
+  return p.join(' ');
+}
+
+/* ============================================================ ASSISTANT */
+const KB=[
+ {q:['snr','noise','digits','speech'],a:s=>`Digits-in-noise measures how well you follow speech in background sound — reported as dB SNR (lower is better). Yours: <b>${s&&s.snr!=null?s.snr+' dB':'—'}</b>. It needs no calibration, so it’s reliable on any phone.`},
+ {q:['pure','tone','frequency','audiogram','pitch'],a:s=>`The pure-tone sweep finds the softest tone you can hear across frequencies. It sketches an audiogram-style profile. Use headphones in a quiet room; treat it as a relative screen, not clinical dB HL.`},
+ {q:['high','high-freq','2khz','4khz','8khz'],a:s=>`High-frequency loss (2–4 kHz) is the most common early pattern from age or noise. If your high-freq score is low, protect your ears and re-test — and see an audiologist if it persists.`},
+ {q:['calibrat','accurate','reliable','db hl'],a:s=>`Exact dB HL needs calibrated headphones, which consumer gear can’t guarantee — that’s why HearSense leads with digits-in-noise (calibration-free) and treats pure-tone as relative. It’s a screen, not a diagnosis.`},
+ {q:['noise','room','quiet','environment'],a:s=>`Background noise skews results. HearSense checks your room with the mic before testing and blocks it if it’s too loud. Test in the quietest room you can, ideally with headphones.`},
+ {q:['baseline','trend','monitor','track'],a:s=>`Save a good test as your <b>baseline</b>, then re-test monthly. History and the Monthly report plot your trend so you catch gradual changes early.`},
+ {q:['cure','fix','treat','improve','aid'],a:s=>`Some hearing loss can be managed (hearing aids, medical treatment for certain causes), and noise-induced loss is <b>preventable</b>. HearSense screens &amp; monitors; an audiologist decides treatment. Protect your ears from loud sound and take listening breaks.`},
+ {q:['doctor','audiolog','ent','consult'],a:s=>`Tap “Contact Audiologist” anytime — I’ll attach your latest screening so the consult starts with context.`},
+ {q:['protect','prevent','loud','headphone volume'],a:s=>`Follow the 60/60 rule: no more than 60% volume for 60 minutes, then a break. Use noise-cancelling headphones so you don’t crank the volume in noise.`},
+ {q:['privacy','data','offline','store'],a:s=>`All tests run and are stored <b>on your device</b> — nothing is uploaded. Export or clear your data anytime in Devices/History.`},
+];
+function botReply(text){const s=tests[tests.length-1],t=text.toLowerCase();let hit=KB.find(k=>k.q.some(w=>t.includes(w)));
+  if(!hit)return s?`Your latest screen scored <b>${s.score}/100</b> (${s.category}). Ask me about “speech-in-noise”, “high frequencies”, “calibration”, “protect my ears”, or “monitor over time”.`
+    :`Run a test first, then ask about your SNR, high frequencies, how to protect your ears, or how to monitor over time. You can also tap “Contact Audiologist”.`;
+  return hit.a(s);}
+function pushMsg(t,who){const l=$('chatlog'),d=document.createElement('div');d.className='msg '+who;d.innerHTML=t;l.appendChild(d);l.scrollTop=l.scrollHeight;}
+function sendChat(){const i=$('chatInput'),v=i.value.trim();if(!v)return;pushMsg(v,'me');i.value='';setTimeout(()=>pushMsg(botReply(v),'bot'),180);}
+function initChat(){$('chatlog').innerHTML='';pushMsg('Hi! I’m your HearSense assistant. I explain your results and hearing-health tips — all on-device, no internet needed. What would you like to know?','bot');
+  $('chatChips').innerHTML=['Explain my SNR','What is high-freq loss?','How do I protect my ears?','Can it be cured?','Talk to an audiologist'].map(c=>`<span class="chip" onclick="quick('${c}')">${c}</span>`).join('');
+  $('chatInput').addEventListener('keydown',e=>{if(e.key==='Enter')sendChat();});}
+function quick(c){if(c==='Talk to an audiologist'){openDoctor();return;}$('chatInput').value=c;sendChat();}
+function renderTips(){const s=tests[tests.length-1];if(!s){$('tipsOut').innerHTML='<em>Run a test to get tailored tips.</em>';return;}
+  let tips=[];
+  if(s.category==='Refer'||s.score<55)tips.push(['See an audiologist','Your screen suggests a professional test — book one soon.']);
+  if(s.highFreq!=null&&s.highFreq<60)tips.push(['Protect high frequencies','Limit loud-noise exposure; use ear protection at concerts and work sites.']);
+  tips.push(['60/60 rule','Keep headphone volume ≤60% for ≤60 min, then take a break.']);
+  tips.push(['Quiet re-tests','Re-test monthly in the same quiet room with the same headphones.']);
+  if(s.snr!=null&&s.snr>-4)tips.push(['Hearing in noise','Face speakers, reduce background noise, and consider noise-cancelling headphones.']);
+  $('tipsOut').innerHTML=`<ul style="padding-left:19px;margin:0">${tips.map(t=>`<li style="margin-bottom:9px"><b>${t[0]}</b> — ${t[1]}</li>`).join('')}</ul>`;
+}
+
+/* ============================================================ DEVICES / DOCTOR */
+function renderDevices(){$('scr').textContent=window.innerWidth+'×'+window.innerHeight;
+  $('hasMic').textContent=HAS_MIC?'available':'not available';$('hasTTS').textContent=HAS_TTS?'available':'not available';
+  $('storedN').textContent=tests.length;$('engRow').textContent=engineName;}
+function exportAll(){const blob=new Blob([JSON.stringify({tests,baseline},null,2)],{type:'application/json'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='hearsense-data.json';a.click();}
+function openDoctor(){const s=tests[tests.length-1];
+  $('docReason').innerHTML=s?`Sharing with the audiologist: ${TESTS[s.test].name} (${s.ear}) · score <b>${s.score}/100</b> · ${s.category}${s.snr!=null?' · SNR '+s.snr+' dB':''}${lastRefer?' · <b style="color:var(--bad)">flagged for review</b>':''}.`
+    :`Run a test first so your audiologist gets your latest screening.`;
+  $('docModal').classList.add('on');}
+function closeDoctor(){$('docModal').classList.remove('on');}
+$('docModal').addEventListener('click',e=>{if(e.target.id==='docModal')closeDoctor();});
+
+/* ============================================================ INIT */
+(function init(){
+  buildTests();setMode('real');setEngine();
+  if(!HAS_AUDIO){setMode('sim');$('modeMsg').textContent='— audio not available, demo mode on.';}
+  initChat();renderDevices();
+  window.addEventListener('resize',()=>{
+    if(!$('tab-history').classList.contains('hidden'))plotMetric(curMetric);
+    if(!$('audioWrap').classList.contains('hidden')&&tests.length){const last=tests[tests.length-1];if(last.test==='tone')drawAudiogram($('audiogram'),last,baseline);}
+  });
+  if(tests.length){showResults(tests[tests.length-1]);runExplainer(tests[tests.length-1]);renderTips();}
+})();
+</script>
+</body>
+</html>
