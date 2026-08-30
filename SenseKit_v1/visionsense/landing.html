@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>VisionSense — Screen &amp; track your eyesight from your phone</title>
+<style>
+  :root{
+    --ink:#0b1220;--slate:#41505f;--mute:#7a8798;--line:#e6eaf0;--bg:#f3f7fb;--card:#fff;
+    --brand:#2563eb;--brand2:#3b82f6;--indigo:#4f46e5;--teal:#0e9488;--red:#dc2626;--green:#0a7d54;--amber:#b7791f;
+    --sh:0 2px 6px rgba(11,18,32,.06),0 12px 28px rgba(11,18,32,.07);--sh-lg:0 24px 60px rgba(11,18,32,.14);--r:20px;
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;font-family:"Inter",-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--slate);-webkit-font-smoothing:antialiased;line-height:1.6}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 22px}
+  h1,h2,h3{color:var(--ink);letter-spacing:-.4px}
+  header{position:sticky;top:0;z-index:40;background:rgba(243,247,251,.8);backdrop-filter:saturate(180%) blur(14px);border-bottom:1px solid var(--line)}
+  header .wrap{display:flex;align-items:center;height:66px;gap:16px}
+  .brand{display:flex;align-items:center;gap:11px;font-weight:850;color:var(--ink);font-size:20px}
+  .logo{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,var(--brand),var(--indigo));display:grid;place-items:center}
+  .logo svg{width:20px;height:20px}
+  header nav{margin-left:auto;display:flex;gap:8px;align-items:center}
+  header nav a{font-weight:650;font-size:14px;color:var(--slate);padding:8px 12px;border-radius:9px}
+  header nav a:hover{background:#e8eef5;color:var(--ink)}
+  .cta{background:linear-gradient(135deg,var(--brand),var(--indigo));color:#fff!important;padding:10px 18px!important;border-radius:11px;box-shadow:var(--sh);font-weight:750}
+  @media(max-width:720px){.hidesm{display:none}}
+  .hero{position:relative;overflow:hidden;padding:70px 0 56px;background:radial-gradient(90% 120% at 80% 0%,#0f1a33 0%,#0b1220 55%,#070a12 100%);color:#fff}
+  .hero .wrap{position:relative;z-index:2;display:grid;grid-template-columns:1.05fr .95fr;gap:42px;align-items:center}
+  @media(max-width:900px){.hero .wrap{grid-template-columns:1fr;gap:30px}}
+  .hero .kick{display:inline-flex;align-items:center;gap:8px;background:rgba(59,130,246,.18);color:#bfdbfe;font-weight:750;font-size:12.5px;padding:7px 13px;border-radius:999px;margin-bottom:18px;border:1px solid rgba(59,130,246,.35)}
+  .hero .kick .dot{width:7px;height:7px;border-radius:50%;background:var(--brand2);box-shadow:0 0 0 4px rgba(59,130,246,.25)}
+  .hero h1{font-size:52px;line-height:1.03;color:#fff;margin:0 0 18px;letter-spacing:-1.6px;font-weight:850}
+  .hero h1 .g{background:linear-gradient(120deg,#3b82f6,#60a5fa,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .hero p{font-size:18px;color:#c3ccdb;max-width:520px;margin:0 0 26px}
+  @media(max-width:600px){.hero h1{font-size:36px}.hero{padding:48px 0 40px}}
+  .heroBtns{display:flex;gap:12px;flex-wrap:wrap}
+  .btn{border:0;border-radius:13px;padding:14px 24px;font-weight:750;font-size:15px;cursor:pointer;box-shadow:var(--sh);transition:.16s;display:inline-flex;align-items:center;gap:8px}
+  .btn:hover{transform:translateY(-2px)}
+  .btn.primary{background:linear-gradient(135deg,var(--brand),var(--indigo));color:#fff}
+  .btn.glass{background:rgba(255,255,255,.1);color:#fff;border:1px solid rgba(255,255,255,.22);box-shadow:none}
+  .heroStats{display:flex;gap:28px;margin-top:30px}
+  .heroStats .n{font-size:26px;font-weight:850;color:#fff}
+  .heroStats .l{font-size:12px;color:#94a3b8}
+  .phone{width:270px;margin:0 auto;background:#0d1526;border:9px solid #1a2842;border-radius:38px;padding:14px 12px;box-shadow:var(--sh-lg);position:relative}
+  .phone::before{content:"";position:absolute;top:16px;left:50%;transform:translateX(-50%);width:70px;height:6px;background:#26375a;border-radius:999px}
+  .screen{background:radial-gradient(120% 100% at 50% 0,#14213d,#070a12);border-radius:26px;padding:24px 16px 18px;min-height:440px;color:#fff}
+  .screen .lil{font-size:10px;color:#bfdbfe;font-weight:800;letter-spacing:.5px;text-transform:uppercase}
+  .opto{font-size:52px;font-weight:850;text-align:center;margin:14px 0 6px;font-family:'Courier New',monospace}
+  .vapill{text-align:center;font-size:13px;color:#93c5fd;font-weight:800;margin-bottom:10px}
+  .ish{width:110px;height:110px;border-radius:50%;margin:10px auto;position:relative;overflow:hidden;background:#0a1120}
+  .mrow{display:flex;justify-content:space-between;font-size:11px;padding:7px 4px;border-bottom:1px solid rgba(255,255,255,.06)}
+  .mrow b{color:#fff}.mrow .g{color:#86efac}.mrow .w{color:#fcd34d}
+  section{padding:64px 0}
+  .eyebrow{color:var(--brand);font-weight:800;font-size:12.5px;letter-spacing:.6px;text-transform:uppercase;margin-bottom:8px}
+  .h2{font-size:34px;margin:0 0 12px;font-weight:850}
+  .lead{font-size:17px;color:var(--mute);max-width:640px}
+  .grid{display:grid;gap:20px}
+  .g2{grid-template-columns:1fr 1fr}.g3{grid-template-columns:repeat(3,1fr)}.g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:900px){.g3,.g4{grid-template-columns:1fr 1fr}.g2{grid-template-columns:1fr}}
+  @media(max-width:600px){.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:24px;box-shadow:var(--sh)}
+  .fic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;font-size:22px;margin-bottom:14px}
+  .card h3{font-size:18px;margin:0 0 6px}.card p{margin:0;font-size:14px;color:var(--slate)}
+  .band{background:var(--ink);color:#fff}.band .h2{color:#fff}.band .lead{color:#94a3b8}
+  .statbig{font-size:42px;font-weight:850;background:linear-gradient(120deg,#3b82f6,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent}
+  .modes{display:grid;grid-template-columns:1fr 1fr 1fr;gap:18px;margin-top:32px}
+  @media(max-width:820px){.modes{grid-template-columns:1fr}}
+  .modecard{border-radius:var(--r);padding:24px;color:#fff;position:relative;overflow:hidden}
+  .mA{background:linear-gradient(135deg,#2563eb,#3b82f6)}.mB{background:linear-gradient(135deg,#4f46e5,#7c3aed)}.mC{background:linear-gradient(135deg,#0e9488,#14b8a6)}
+  .modecard h3{color:#fff;font-size:20px;margin:0 0 8px}.modecard p{color:rgba(255,255,255,.92);font-size:14px;margin:0 0 12px}
+  .modecard ul{margin:0;padding-left:18px;font-size:13px;color:rgba(255,255,255,.92)}.modecard li{margin-bottom:5px}
+  .badgeok{display:inline-block;font-size:11px;font-weight:800;background:rgba(255,255,255,.18);color:#fff;padding:3px 9px;border-radius:999px;margin-bottom:10px}
+  .step{display:flex;gap:16px;align-items:flex-start}
+  .stepn{flex:none;width:38px;height:38px;border-radius:11px;background:linear-gradient(135deg,var(--brand),var(--indigo));color:#fff;display:grid;place-items:center;font-weight:850}
+  .step h3{margin:0 0 4px;font-size:17px}.step p{margin:0;font-size:14px}
+  .quote{border-left:4px solid var(--brand);background:#fff;border-radius:14px;padding:18px 20px;box-shadow:var(--sh)}
+  .quote .num{font-size:22px;font-weight:850;color:var(--brand)}.quote a{color:var(--brand);font-size:12.5px}
+  .ctaband{background:radial-gradient(90% 140% at 20% 0,#0f1a33,#070a12);color:#fff;border-radius:26px;padding:52px 40px;text-align:center;box-shadow:var(--sh-lg)}
+  .ctaband h2{color:#fff;font-size:34px;margin:0 0 10px}.ctaband p{color:#c3ccdb;font-size:17px;margin:0 0 26px}
+  .pill{display:inline-block;font-size:11px;font-weight:800;color:var(--brand);background:#e5edff;padding:4px 10px;border-radius:999px}
+  footer{padding:40px 0 60px;color:var(--mute);font-size:13px}
+  footer .wrap{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:1px solid var(--line);padding-top:26px}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand"><span class="logo"><svg viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" stroke="#fff" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="#fff" stroke-width="1.7"/></svg></span>VisionSense</div>
+    <nav>
+      <a href="#how" class="hidesm">How it works</a>
+      <a href="#modes" class="hidesm">Tests</a>
+      <a href="#research" class="hidesm">Research</a>
+      <a class="cta" href="index.html">Launch app →</a>
+    </nav>
+  </div>
+</header>
+
+<div class="hero">
+  <div class="wrap">
+    <div>
+      <span class="kick"><span class="dot"></span> iQOO HealthTech · screen + camera + touch · on-device</span>
+      <h1>Screen your eyes — <span class="g">and track changes over time.</span></h1>
+      <p>VisionSense turns the phone into an at-home vision screen: visual acuity, a colour-blindness test,
+         and change-monitoring — plus daily-life colour tools for people who are colour-blind.</p>
+      <div class="heroBtns">
+        <a class="btn primary" href="index.html">▶ Launch the app</a>
+        <a class="btn glass" href="#how">See how it works</a>
+      </div>
+      <div class="heroStats">
+        <div><div class="n">3</div><div class="l">tests: acuity · colour · Amsler</div></div>
+        <div><div class="n">&lt;1 line</div><div class="l">agreement w/ clinic charts</div></div>
+        <div><div class="n">100%</div><div class="l">on-device &amp; private</div></div>
+      </div>
+    </div>
+    <div>
+      <div class="phone"><div class="screen">
+        <div class="lil">Visual acuity · which way does it open?</div>
+        <div class="opto">C</div>
+        <div class="vapill">Est. acuity 6/9 · logMAR 0.18</div>
+        <div class="ish" id="hIsh"></div>
+        <div class="mrow"><span>Colour vision</span><b class="g">Normal</b></div>
+        <div class="mrow"><span>vs last test</span><b>stable</b></div>
+        <div class="mrow"><span>Distance</span><b class="g">40 cm · OK</b></div>
+      </div></div>
+    </div>
+  </div>
+</div>
+
+<section class="band">
+  <div class="wrap">
+    <div class="eyebrow" style="color:#bfdbfe">The problem</div>
+    <h2 class="h2">People notice blurry vision only after it’s worsened.</h2>
+    <p class="lead">Eye tests aren’t always convenient, and colour-blindness often goes undetected for years —
+       affecting school, work and daily life. The phone can screen for both and track change over time.</p>
+    <div class="grid g3" style="margin-top:34px">
+      <div><div class="statbig">2.2&nbsp;billion</div><p style="color:#94a3b8;margin:4px 0 0">people have a vision impairment; nearly half preventable/uncorrected (WHO).</p></div>
+      <div><div class="statbig">1 in 12 men</div><p style="color:#94a3b8;margin:4px 0 0">are colour-blind (1 in 200 women) — many never formally tested.</p></div>
+      <div><div class="statbig">Monitor</div><p style="color:#94a3b8;margin:4px 0 0">the real value: catching gradual change, not a one-off number.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="how">
+  <div class="wrap">
+    <div class="eyebrow">How it works</div>
+    <h2 class="h2">A two-minute screen. A trend you can track.</h2>
+    <div class="grid g2" style="margin-top:34px">
+      <div style="display:flex;flex-direction:column;gap:22px">
+        <div class="step"><div class="stepn">1</div><div><h3>Distance-aware</h3><p>The front camera estimates how far the phone is from your face, so letter sizes map to a true visual angle.</p></div></div>
+        <div class="step"><div class="stepn">2</div><div><h3>Acuity test</h3><p>Tumbling-C / Landolt optotypes shrink with a staircase; you swipe the direction — giving a logMAR estimate.</p></div></div>
+        <div class="step"><div class="stepn">3</div><div><h3>Colour &amp; Amsler</h3><p>An Ishihara-style plate test screens colour vision; an Amsler grid checks central-vision distortion.</p></div></div>
+        <div class="step"><div class="stepn">4</div><div><h3>Track &amp; assist</h3><p>Store a baseline, monitor change, and use the colour-namer + Daltonize tools for daily life.</p></div></div>
+      </div>
+      <div class="card" style="background:radial-gradient(120% 100% at 50% 0,#14213d,#070a12);color:#fff;display:flex;flex-direction:column;justify-content:center">
+        <div class="eyebrow" style="color:#bfdbfe">Example output</div>
+        <div style="font-size:15px;line-height:1.9;margin-top:8px">
+          “Estimated distance acuity: <b style="color:#fff">6/9 (logMAR 0.18)</b>”<br>
+          “Colour vision: likely <b style="color:#fff">deutan (red-green)</b> — mild.”<br>
+          “Acuity decreased consistently across <b style="color:#fff">3 tests</b> — see an optometrist.”<br>
+          “Amsler grid: no distortion reported.”
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="modes" style="background:#fff;border-top:1px solid var(--line);border-bottom:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Three tests + assistive tools</div>
+    <h2 class="h2">Screen acuity, colour vision &amp; central vision.</h2>
+    <div class="modes">
+      <div class="modecard mA">
+        <span class="badgeok">Distance-aware</span>
+        <h3>👁️ Visual acuity</h3>
+        <p>Tumbling optotypes with a staircase → a logMAR / 6-6 estimate per eye.</p>
+        <ul><li>Camera face-distance scaling</li><li>Swipe answers</li><li>Change monitoring over time</li></ul>
+      </div>
+      <div class="modecard mB">
+        <span class="badgeok">Ishihara-style</span>
+        <h3>🎨 Colour vision</h3>
+        <p>Dotted plates screen for red-green (protan/deutan) &amp; blue-yellow deficiency, with a severity estimate.</p>
+        <ul><li>Type &amp; degree estimate</li><li>Colour-namer helper</li><li>Daltonize screen filter</li></ul>
+      </div>
+      <div class="modecard mC">
+        <span class="badgeok">Central vision</span>
+        <h3>🔲 Amsler grid</h3>
+        <p>Check for distortion or blank spots that can signal macular problems.</p>
+        <ul><li>Interactive grid</li><li>Report what you see</li><li>Early-warning flag</li></ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="eyebrow">For colour-blind users</div>
+    <h2 class="h2">We can’t cure it — but we make daily life easier.</h2>
+    <p class="lead">Colour blindness is genetic and not curable. VisionSense helps you live with it: identify colours instantly and re-shade the world so you can tell them apart.</p>
+    <div class="grid g2" style="margin-top:28px">
+      <div class="card"><div class="fic" style="background:#e5edff">🎯</div><h3>Colour namer</h3><p>Point the camera (or tap the screen) and VisionSense tells you the colour name — great for clothes, wires, charts and signals.</p></div>
+      <div class="card"><div class="fic" style="background:#f3e8ff">🌈</div><h3>Daltonize filter</h3><p>Re-maps colours so red-green or blue-yellow differences become distinguishable — a live assistive filter for images and the screen.</p></div>
+    </div>
+  </div>
+</section>
+
+<section id="research" style="background:#fff;border-top:1px solid var(--line)">
+  <div class="wrap">
+    <div class="eyebrow">Backed by research</div>
+    <h2 class="h2">Grounded in validated methods.</h2>
+    <p class="lead">Smartphone acuity apps agree with clinical charts to within about one line; our edge is the monitoring layer.</p>
+    <div class="grid g3" style="margin-top:30px">
+      <div class="quote"><div class="num">&lt;1 line</div><p>vision.app / EyeChart acuity vs Snellen/ETDRS clinical charts.</p><a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC10323187/" target="_blank">PMC 2023 →</a></div>
+      <div class="quote"><div class="num">AUC &gt;0.90</div><p>Peek Acuity validated for visual-impairment screening.</p><a href="https://www.tandfonline.com/doi/full/10.2147/OPTO.S447554" target="_blank">Optometry 2024 →</a></div>
+      <div class="quote"><div class="num">Sphere/cyl</div><p>Smartphone refractive-change monitoring shown feasible.</p><a href="https://vision.app/vision_app_assets/pdf/Poster%20ARVO%202026%20Mart%C3%ADnez-Ros.pdf" target="_blank">ARVO 2026 →</a></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="ctaband">
+      <span class="pill" style="background:rgba(59,130,246,.18);color:#bfdbfe">Round-1 web prototype</span>
+      <h2 style="margin-top:14px">Try VisionSense now.</h2>
+      <p>Runs in your browser. Hold the phone at arm’s length, or use Demo mode on a laptop.</p>
+      <div style="display:flex;gap:12px;justify-content:center;flex-wrap:wrap">
+        <a class="btn primary" href="index.html">▶ Launch the app</a>
+        <a class="btn glass" href="index.html#tab-colour">Try the colour test</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap">
+    <div><b style="color:var(--slate)">VisionSense</b> · on-device vision screening &amp; monitoring · Hackathon Round-1 (web). Not a medical device.</div>
+    <div>Phase 2 = native app with calibrated screen-size profiles &amp; live camera colour tools.</div>
+  </div>
+</footer>
+
+<script>
+/* mini Ishihara-style plate in the phone mock */
+(function(){
+  const el=document.getElementById('hIsh');if(!el)return;
+  const S=110;const cv=document.createElement('canvas');cv.width=S;cv.height=S;cv.style.width='100%';cv.style.height='100%';el.appendChild(cv);
+  const ctx=cv.getContext('2d');
+  // "5" mask
+  ctx.fillStyle='#fff';ctx.font='bold 62px Arial';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText('5',S/2,S/2+2);
+  const img=ctx.getImageData(0,0,S,S);ctx.clearRect(0,0,S,S);
+  const bg=['#7a8b4a','#8a9a55','#9caf63'],fg=['#c96a3a','#d67b45','#e08a52'];
+  for(let i=0;i<900;i++){const x=Math.random()*S,y=Math.random()*S,r=Math.random()*4+2;
+    const dx=x-S/2,dy=y-S/2;if(dx*dx+dy*dy>((S/2-2)*(S/2-2)))continue;
+    const px=img.data[(Math.floor(y)*S+Math.floor(x))*4]>128;
+    ctx.beginPath();ctx.fillStyle=(px?fg:bg)[Math.floor(Math.random()*3)];ctx.arc(x,y,r,0,7);ctx.fill();}
+})();
+</script>
+</body>
+</html>
